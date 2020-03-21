@@ -7,6 +7,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import argparse
+import numpy as np
 from pymwalib.context import Context
 
 if __name__ == "__main__":
@@ -18,4 +19,51 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with Context(args.metafits, args.gpuboxes) as context:
+        # Test printing via repr(context)
+        print(f"{repr(context)}")
+
+        # Test timesteps
+        for t in context.timesteps:
+            print(repr(t))
+
+        # Test the debug "display" method
         context.display()
+
+        # Sum the data by baseline
+        print(f"Summing {context.num_timesteps} timesteps "
+              f"and {context.num_coarse_channels} coarse channels...")
+
+        total_sum = 0
+        for timestep_index in range(0, context.num_timesteps):
+            this_sum = 0
+
+            for coarse_channel_index in range(0, context.num_coarse_channels):
+                try:
+                    data = context.read_by_baseline(timestep_index,
+                                                    coarse_channel_index)
+                except Exception as e:
+                    print(f"Error: {e}")
+                    exit(-1)
+
+                this_sum = np.sum(data, dtype=np.float64)
+
+                total_sum += this_sum
+        print("Total sum by baseline:  {}".format(total_sum))
+
+        # Sum the data by frequency
+        total_sum = 0
+        for timestep_index in range(0, context.num_timesteps):
+            this_sum = 0
+
+            for coarse_channel_index in range(0, context.num_coarse_channels):
+                try:
+                    data = context.read_by_frequency(timestep_index,
+                                                     coarse_channel_index)
+                except Exception as e:
+                    print(f"Error: {e}")
+                    exit(-1)
+
+                this_sum = np.sum(data, dtype=np.float64)
+
+                total_sum += this_sum
+        print("Total sum by frequency: {}".format(total_sum))
