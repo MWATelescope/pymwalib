@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# context: main interface for pymwalib
+# timestep: class representing a single timestep in mwalib
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,12 +15,28 @@
 
 
 class TimeStep:
-    def __init__(self, order: int, unix_time_ms: int):
-        self.order = order
-        self.unix_time_ms = unix_time_ms
+    """
+    A class representing a single mwalibTimeStep
+
+    Attributes
+    ----------
+    index : int
+        Ordinal index of this time step.
+
+    unix_time_ms : int
+        The UNIX time (in milliseconds) of the start of this time step
+
+    """
+
+    def __init__(self,
+                 index: int,
+                 unix_time_ms: int):
+        """Initialise the class"""
+        self.index: int = index
+        self.unix_time_ms: int = unix_time_ms
 
     def __repr__(self):
-        return f"Order: {self.order}, UNIX time: {float(self.unix_time_ms) / 1000.}"
-
-    def __str__(self):
-        return "pymwalib.TimeStep"
+        """Returns a representation of the class"""
+        return f"{self.__class__.__name__}(" \
+               f"Order: {self.index}, " \
+               f"UNIX time: {float(self.unix_time_ms) / 1000.})"

@@ -15,6 +15,9 @@
 import enum
 import numpy.ctypeslib as npct
 from pymwalib.mwalib import *
+from pymwalib.antenna import Antenna
+from pymwalib.coarse_channel import CoarseChannel
+from pymwalib.rfinput import RFInput
 from pymwalib.timestep import TimeStep
 
 
@@ -31,8 +34,23 @@ class ContextGetContextError(ContextError):
     pass
 
 
+class ContextGetAntennaError(ContextError):
+    """Raised when call to C mwalibAntenna_get fails"""
+    pass
+
+
+class ContextGetCoarseChannelError(ContextError):
+    """Raised when call to C mwalibCoarseChannel_get fails"""
+    pass
+
+
 class ContextGetMetadataError(ContextError):
     """Raised when call to C mwalibMetadata_get fails"""
+    pass
+
+
+class ContextGetRFInputError(ContextError):
+    """Raised when call to C mwalibRFInput_get fails"""
     pass
 
 
@@ -56,8 +74,8 @@ class ContextReadByFrequencyException(ContextError):
     pass
 
 
-
 class CorrelatorVersion(enum.Enum):
+    """Enum for Correlator version"""
     # MWAX correlator(v2)
     V2 = 0
     # MWA Legacy correlator(v1), having data files with "gpubox" and batch numbers in their names.
@@ -67,7 +85,9 @@ class CorrelatorVersion(enum.Enum):
 
 
 class Context:
+    """Main class to interface with mwalib"""
     def __init__(self, metafits_filename: str, gpubox_filenames: list):
+        """Take metafits and gpubox files, and populate this class via mwalib"""
         # First populate the context object
         self._get_context(metafits_filename, gpubox_filenames)
 
@@ -77,14 +97,26 @@ class Context:
         # Populate timesteps
         self._get_timesteps()
 
+        # Populate rf_inputs
+        self._get_rf_inputs()
+
+        # Populate antennas
+        self._get_antennas()
+
+        # Populate coarse channels
+        self._get_coarse_channels()
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Ensure we free the rust allocated memory in mwalib"""
         if self._context_object:
             mwalib.mwalibContext_free(self._context_object)
 
     def _get_context(self, metafits_filename: str, gpubox_filenames: list):
+        """This method will read and validate the metafits and gpubox files. If all has worked, then
+        the context object can be used in subsequent calls to populate aspects of this class."""
         # Encode all inputs as UTF-8.
         m = ct.c_char_p(metafits_filename.encode("utf-8"))
 
@@ -102,6 +134,7 @@ class Context:
             raise ContextGetContextError(f"Error creating context object: {error_message.decode('utf-8').rstrip()}")
 
     def _get_metadata(self):
+        """Retrieve all of the context metadata and populate this class."""
         error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
         c_object = CmwalibMetadata.from_address(
@@ -165,7 +198,37 @@ class Context:
             # We're now finished with the C memory, so free it
             mwalib.mwalibMetadata_free(c_object)
 
+    def _get_coarse_channels(self):
+        """Retrieve all of the coarse channel metadata and populate a list of coarse channels."""
+        self.coarse_channels = []
+        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        for i in range(0, self.num_coarse_channels):
+            c_object = CmwalibCoarseChannel.from_address(
+                mwalib.mwalibCoarseChannel_get(self._context_object,
+                                               i,
+                                               error_message,
+                                               ERROR_MESSAGE_LEN))
+
+            if not c_object:
+                raise ContextGetTimeStepError(f"Error creating coarse channel object:"
+                                              f" {error_message.decode('utf-8').rstrip()}")
+            else:
+                # Populate all the fields
+                self.coarse_channels.append(CoarseChannel(i,
+                                                          c_object.correlator_channel_number,
+                                                          c_object.receiver_channel_number,
+                                                          c_object.gpubox_number,
+                                                          c_object.channel_width_hz,
+                                                          c_object.channel_start_hz,
+                                                          c_object.channel_centre_hz,
+                                                          c_object.channel_end_hz,))
+
+                # We're now finished with the C memory, so free it
+                mwalib.mwalibCoarseChannel_free(c_object)
+
     def _get_timesteps(self):
+        """Retrieve all of the time step metadata and populate a list of time steps."""
         self.timesteps = []
         error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
@@ -185,7 +248,69 @@ class Context:
                 # We're now finished with the C memory, so free it
                 mwalib.mwalibTimeStep_free(c_object)
 
+    def _get_rf_inputs(self):
+        """Retrieve all of the rf_input metadata and populate a list of rf inputs."""
+        self.rf_inputs = []
+        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        for i in range(0, self.num_rf_inputs):
+            c_object = CmwalibRFInput.from_address(
+                mwalib.mwalibRFInput_get(self._context_object,
+                                         i,
+                                         error_message,
+                                         ERROR_MESSAGE_LEN))
+
+            if not c_object:
+                raise ContextGetRFInputError(f"Error creating rf_input object: "
+                                             f"{error_message.decode('utf-8').rstrip()}")
+            else:
+                # Populate all the fields
+                self.rf_inputs.append(RFInput(i,
+                                      c_object.input,
+                                      c_object.antenna,
+                                      c_object.tile_id,
+                                      c_object.tile_name.decode("utf-8"),
+                                      c_object.pol.decode("utf-8"),
+                                      c_object.electrical_length_m,
+                                      c_object.north_m,
+                                      c_object.east_m,
+                                      c_object.height_m,
+                                      c_object.vcs_order,
+                                      c_object.subfile_order,
+                                      c_object.flagged,))
+
+                # We're now finished with the C memory, so free it
+                mwalib.mwalibRFInput_free(c_object)
+
+    def _get_antennas(self):
+        """Retrieve all of the antenna metadata and populate a list of antennas."""
+        self.antennas = []
+        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        for i in range(0, self.num_antennas):
+            c_object = CmwalibAntenna.from_address(
+                mwalib.mwalibAntenna_get(self._context_object,
+                                         i,
+                                         error_message,
+                                         ERROR_MESSAGE_LEN))
+
+            if not c_object:
+                raise ContextGetAntennaError(f"Error creating antenna object: "
+                                             f"{error_message.decode('utf-8').rstrip()}")
+            else:
+                # Populate all the fields
+                self.antennas.append(Antenna(i,
+                                     c_object.antenna,
+                                     c_object.tile_id,
+                                     c_object.tile_name.decode("utf-8"),
+                                     self.rf_inputs[i * 2],
+                                     self.rf_inputs[(i * 2) + 1]))
+
+                # We're now finished with the C memory, so free it
+                mwalib.mwalibAntenna_free(c_object)
+
     def display(self):
+        """Displays a human readable summary of the observation"""
         error_message = create_string_buffer(ERROR_MESSAGE_LEN)
 
         if mwalib.mwalibContext_display(self._context_object, error_message, ERROR_MESSAGE_LEN) != 0:
@@ -193,6 +318,7 @@ class Context:
                                       f"{error_message.decode('utf-8').rstrip()}")
 
     def read_by_baseline(self, timestep_index, coarse_channel_index):
+        """Retrieve one HDU (ordered baseline,freq,pol,r,i) as a numpy array."""
         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
         float_buffer_type = ct.c_float * self.num_timestep_coarse_channel_floats
@@ -210,6 +336,7 @@ class Context:
             return npct.as_array(buffer, shape=(self.num_timestep_coarse_channel_floats,))
 
     def read_by_frequency(self, timestep_index, coarse_channel_index):
+        """Retrieve one HDU (ordered freq,baseline,pol,r,i) as a numpy array."""
         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
         float_buffer_type = ct.c_float * self.num_timestep_coarse_channel_floats
@@ -227,7 +354,9 @@ class Context:
             return npct.as_array(buffer, shape=(self.num_timestep_coarse_channel_floats,))
 
     def __repr__(self):
-        return f"Obs ID                                : {self.obsid}\n" \
+        """Returns a representation of the class"""
+        return f"{self.__class__.__name__}(\n" \
+               f"Obs ID                                : {self.obsid}\n" \
                f"Correlator Version                    : {CorrelatorVersion(self.corr_version).name}\n" \
                f"MWA Lat                               : {self.mwa_latitude_radians} rad\n" \
                f"MWA Long                              : {self.mwa_longitude_radians} rad\n" \
@@ -276,7 +405,4 @@ class Context:
                f"{float(self.num_timestep_coarse_channel_bytes) / (1024. * 1024.)} MB\n" \
                f"Num floats per timestep coarse channel: " \
                f"{self.num_timestep_coarse_channel_floats}\n" \
-               f"(actual) num GPUBox files             : {self.num_gpubox_files}\n"
-
-    def __str__(self):
-        return "A pymwalib.Context"
+               f"(actual) num GPUBox files             : {self.num_gpubox_files})"

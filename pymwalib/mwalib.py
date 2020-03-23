@@ -7,7 +7,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import ctypes as ct
-import os
 import sys
 
 
@@ -15,6 +14,9 @@ def create_string_buffer(length: int) -> bytes:
     return " ".encode("utf-8") * length
 
 
+#
+# CmwalibContextS struct
+#
 class CmwalibContextS(ct.Structure):
     pass
 
@@ -24,8 +26,14 @@ class CmwalibContextS(ct.Structure):
 #
 prefix = {"win32": ""}.get(sys.platform, "lib")
 extension = {"darwin": ".dylib", "win32": ".dll"}.get(sys.platform, ".so")
-path_to_mwalib = os.path.abspath("../mwalib/target/release/" + prefix + "mwalib" + extension)
-mwalib = ct.cdll.LoadLibrary(path_to_mwalib)
+mwalib_filename = prefix + "mwalib" + extension
+mwalib = None
+
+try:
+    mwalib = ct.cdll.LoadLibrary(mwalib_filename)
+except Exception as library_load_err:
+    print(f"Error loading {mwalib_filename}. Please check that it is in your system path or in your LD_LIBRARY_PATH "
+          f"environment variable.")
 
 #
 # mwalibContext.get()
@@ -69,6 +77,9 @@ mwalib.mwalibContext_read_by_frequency.argtypes = \
 mwalib.mwalibContext_read_by_frequency.restype = ct.c_int32
 
 
+#
+# CmwalibMetadata struct
+#
 class CmwalibMetadata(ct.Structure):
     _fields_ = [('obsid', ct.c_uint32),
                 ('corr_version', ct.c_uint32),
@@ -132,8 +143,13 @@ mwalib.mwalibMetadata_get.restype = ct.c_void_p
 
 mwalib.mwalibMetadata_free.argtypes = (ct.POINTER(CmwalibMetadata),)
 
+
+#
+# CmwalibTimeStep struct
+#
 class CmwalibTimeStep(ct.Structure):
     _fields_ = [('unix_time_ms', ct.c_uint64),]
+
 
 #
 # mwalibTimeStep.get()
@@ -150,3 +166,90 @@ mwalib.mwalibTimeStep_get.restype = ct.c_void_p
 #
 mwalib.mwalibTimeStep_free.argtypes = (ct.POINTER(CmwalibTimeStep),)
 
+
+#
+# CmwalibRFInput struct
+#
+class CmwalibRFInput(ct.Structure):
+    _fields_ = [('input', ct.c_uint32),
+                ('antenna', ct.c_uint32),
+                ('tile_id', ct.c_uint32),
+                ('tile_name', ct.c_char_p),
+                ('pol', ct.c_char_p),
+                ('electrical_length_m', ct.c_double),
+                ('north_m', ct.c_double),
+                ('east_m', ct.c_double),
+                ('height_m', ct.c_double),
+                ('vcs_order', ct.c_uint32),
+                ('subfile_order', ct.c_uint32),
+                ('flagged', ct.c_bool),]
+
+
+#
+# mwalibRFInput.get()
+#
+mwalib.mwalibRFInput_get.argtypes = \
+    (ct.POINTER(CmwalibContextS),  # context_ptr
+     ct.c_size_t,                  # input rfinput_index
+     ct.c_char_p,                  # error message
+     ct.c_size_t)                  # length of error message
+mwalib.mwalibRFInput_get.restype = ct.c_void_p
+
+#
+# mwalibRFInput.free()
+#
+mwalib.mwalibRFInput_free.argtypes = (ct.POINTER(CmwalibRFInput),)
+
+
+#
+# CmwalibAntenna struct
+#
+class CmwalibAntenna(ct.Structure):
+    _fields_ = [('antenna', ct.c_uint32),
+                ('tile_id', ct.c_uint32),
+                ('tile_name', ct.c_char_p),]
+
+
+#
+# mwalibAntenna.get()
+#
+mwalib.mwalibAntenna_get.argtypes = \
+    (ct.POINTER(CmwalibContextS),  # context_ptr
+     ct.c_size_t,                  # input antenna_index
+     ct.c_char_p,                  # error message
+     ct.c_size_t)                  # length of error message
+mwalib.mwalibAntenna_get.restype = ct.c_void_p
+
+#
+# mwalibAntenna.free()
+#
+mwalib.mwalibAntenna_free.argtypes = (ct.POINTER(CmwalibAntenna),)
+
+
+#
+# CmwalibCoarseChannel struct
+#
+class CmwalibCoarseChannel(ct.Structure):
+    _fields_ = [('correlator_channel_number', ct.c_size_t),
+                ('receiver_channel_number', ct.c_size_t),
+                ('gpubox_number', ct.c_size_t),
+                ('channel_width_hz', ct.c_uint32),
+                ('channel_start_hz', ct.c_uint32),
+                ('channel_centre_hz', ct.c_uint32),
+                ('channel_end_hz', ct.c_uint32),]
+
+
+#
+# mwalibCoarseChannel.get()
+#
+mwalib.mwalibCoarseChannel_get.argtypes = \
+    (ct.POINTER(CmwalibContextS),  # context_ptr
+     ct.c_size_t,                  # input antenna_index
+     ct.c_char_p,                  # error message
+     ct.c_size_t)                  # length of error message
+mwalib.mwalibCoarseChannel_get.restype = ct.c_void_p
+
+#
+# mwalibCoarseChannel.free()
+#
+mwalib.mwalibCoarseChannel_free.argtypes = (ct.POINTER(CmwalibCoarseChannel),)

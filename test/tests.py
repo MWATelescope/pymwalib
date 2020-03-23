@@ -20,17 +20,35 @@ if __name__ == "__main__":
 
     with Context(args.metafits, args.gpuboxes) as context:
         # Test printing via repr(context)
+        print("\n\n\nTesting Context metadata:")
         print(f"{repr(context)}")
 
         # Test timesteps
+        print("\n\n\nTesting Timesteps:")
         for t in context.timesteps:
             print(repr(t))
 
+        # Test rfinputs
+        print("\n\n\nTesting RF Inputs:")
+        for r in context.rf_inputs:
+            print(repr(r))
+
+        # Test antennas
+        print("\n\n\nTesting Antennas:")
+        for a in context.antennas:
+            print(repr(a))
+
+        # Test coarse channels
+        print("\n\n\nTesting Coarse channels:")
+        for c in context.coarse_channels:
+            print(repr(c))
+
         # Test the debug "display" method
+        print("\n\n\nTesting Display method:")
         context.display()
 
         # Sum the data by baseline
-        print(f"Summing {context.num_timesteps} timesteps "
+        print(f"\n\n\nSumming {context.num_timesteps} timesteps "
               f"and {context.num_coarse_channels} coarse channels...")
 
         total_sum = 0
