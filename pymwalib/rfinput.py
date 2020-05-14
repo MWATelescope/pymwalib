@@ -38,7 +38,7 @@ class RFInput:
                  north_m: float,
                  east_m: float,
                  height_m: float,
-                 vcs_order:int ,
+                 vcs_order: int,
                  subfile_order: int,
                  flagged: bool):
         """Initialise the class"""

@@ -14,11 +14,14 @@
 #
 import enum
 import numpy.ctypeslib as npct
+from datetime import datetime
 from pymwalib.mwalib import *
 from pymwalib.antenna import Antenna
+from pymwalib.baseline import Baseline
 from pymwalib.coarse_channel import CoarseChannel
 from pymwalib.rfinput import RFInput
 from pymwalib.timestep import TimeStep
+from pymwalib.visibility_pol import VisibilityPol
 
 
 ERROR_MESSAGE_LEN = 1024
@@ -39,6 +42,11 @@ class ContextGetAntennaError(ContextError):
     pass
 
 
+class ContextGetBaselineError(ContextError):
+    """Raised when call to C mwalibBaseline_get fails"""
+    pass
+
+
 class ContextGetCoarseChannelError(ContextError):
     """Raised when call to C mwalibCoarseChannel_get fails"""
     pass
@@ -56,6 +64,11 @@ class ContextGetRFInputError(ContextError):
 
 class ContextGetTimeStepError(ContextError):
     """Raised when call to C mwalibTimeStep_get fails"""
+    pass
+
+
+class ContextGetVisibilityPolError(ContextError):
+    """Raised when call to C mwalibVisibilityPol_get fails"""
     pass
 
 
@@ -106,6 +119,12 @@ class Context:
         # Populate coarse channels
         self._get_coarse_channels()
 
+        # Populate baselines
+        self._get_baselines()
+
+        # Populate visibility pols
+        self._get_visibility_pols()
+
     def __enter__(self):
         return self
 
@@ -137,10 +156,9 @@ class Context:
         """Retrieve all of the context metadata and populate this class."""
         error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
-        c_object = CmwalibMetadata.from_address(
-                                        mwalib.mwalibMetadata_get(self._context_object,
-                                        error_message,
-                                        ERROR_MESSAGE_LEN))
+        c_object = CmwalibMetadata.from_address(mwalib.mwalibMetadata_get(self._context_object,
+                                                                          error_message,
+                                                                          ERROR_MESSAGE_LEN))
 
         if not c_object:
             raise ContextGetMetadataError(f"Error creating metadata object: {error_message.decode('utf-8').rstrip()}")
@@ -171,8 +189,12 @@ class Context:
             self.project_id: str = c_object.project_id.decode("utf-8")
             self.observation_name: str = c_object.observation_name.decode("utf-8")
             self.mode: str = c_object.mode.decode("utf-8")
-            self.scheduled_start_utc: int = c_object.scheduled_start_utc
+            self.scheduled_start_utc: datetime = datetime.utcfromtimestamp(c_object.scheduled_start_utc)
+            self.scheduled_end_utc: datetime = datetime.utcfromtimestamp(c_object.scheduled_end_utc)
             self.scheduled_start_mjd: float = c_object.scheduled_start_mjd
+            self.scheduled_end_mjd: float = c_object.scheduled_end_mjd
+            self.scheduled_start_unix_time_milliseconds: int = c_object.scheduled_start_unix_time_milliseconds
+            self.scheduled_end_unix_time_milliseconds: int = c_object.scheduled_end_unix_time_milliseconds
             self.scheduled_duration_milliseconds: int = c_object.scheduled_duration_milliseconds
             self.quack_time_duration_milliseconds: int = c_object.quack_time_duration_milliseconds
             self.good_time_unix_milliseconds: int = c_object.good_time_unix_milliseconds
@@ -309,6 +331,50 @@ class Context:
                 # We're now finished with the C memory, so free it
                 mwalib.mwalibAntenna_free(c_object)
 
+    def _get_baselines(self):
+        """Retrieve all of the baseline metadata and populate a list of baselines."""
+        self.baselines = []
+        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        for i in range(0, self.num_baselines):
+            c_object = CmwalibBaseline.from_address(
+                mwalib.mwalibBaseline_get(self._context_object,
+                                          i,
+                                          error_message,
+                                          ERROR_MESSAGE_LEN))
+
+            if not c_object:
+                raise ContextGetBaselineError(f"Error creating baseline object: "
+                                              f"{error_message.decode('utf-8').rstrip()}")
+            else:
+                # Populate all the fields
+                self.baselines.append(Baseline(i, c_object.antenna1_index, c_object.antenna2_index))
+
+                # We're now finished with the C memory, so free it
+                mwalib.mwalibBaseline_free(c_object)
+
+    def _get_visibility_pols(self):
+        """Retrieve all of the visibility pol metadata and populate a list of visibility pols."""
+        self.visibility_pols = []
+        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        for i in range(0, self.num_visibility_pols):
+            c_object = CmwalibVisibilityPol.from_address(
+                mwalib.mwalibVisibilityPol_get(self._context_object,
+                                               i,
+                                               error_message,
+                                               ERROR_MESSAGE_LEN))
+
+            if not c_object:
+                raise ContextGetVisibilityPolError(f"Error creating visibility pol object: "
+                                                   f"{error_message.decode('utf-8').rstrip()}")
+            else:
+                # Populate all the fields
+                self.visibility_pols.append(VisibilityPol(i, c_object.polarisation.decode("utf-8")))
+
+                # We're now finished with the C memory, so free it
+                mwalib.mwalibVisibilityPol_free(c_object)
+
     def display(self):
         """Displays a human readable summary of the observation"""
         error_message = create_string_buffer(ERROR_MESSAGE_LEN)
@@ -381,8 +447,12 @@ class Context:
                f"Project ID                            : {self.project_id}\n" \
                f"Observation Name                      : {self.observation_name}\n" \
                f"Mode                                  : {self.mode}\n" \
-               f"Scheduled Start                       : {self.scheduled_start_utc} UNIX\n" \
-               f"Scheduled Start                       : {self.scheduled_start_mjd} MJD\n" \
+               f"Scheduled Start (UTC)                 : {self.scheduled_start_utc}\n" \
+               f"Scheduled End (UTC)                   : {self.scheduled_end_utc}\n" \
+               f"Scheduled Start (UNIX)                : {float(self.scheduled_start_unix_time_milliseconds) / 1000.} UNIX\n" \
+               f"Scheduled End (UNIX)                  : {float(self.scheduled_end_unix_time_milliseconds) / 1000.} UNIX\n" \
+               f"Scheduled Start (MJD)                 : {self.scheduled_start_mjd} MJD\n" \
+               f"Scheduled End (MJD)                   : {self.scheduled_end_mjd} MJD\n" \
                f"Scheduled Duration                    : {float(self.scheduled_duration_milliseconds) / 1000.} s\n" \
                f"Quack time (ms)                       : {float(self.quack_time_duration_milliseconds) / 1000.} s\n" \
                f"Good start time                       : {float(self.good_time_unix_milliseconds) / 1000.} UNIX\n" \

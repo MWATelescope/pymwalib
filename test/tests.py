@@ -43,6 +43,16 @@ if __name__ == "__main__":
         for c in context.coarse_channels:
             print(repr(c))
 
+        # Test visibility pols
+        print("\n\n\nTesting visibility pols:")
+        for c in context.visibility_pols:
+            print(repr(c))
+
+        # Test baselines
+        print("\n\n\nTesting first 5 baselines:")
+        for c in range(0, 5):
+            print(repr(context.baselines[c]))
+
         # Test the debug "display" method
         print("\n\n\nTesting Display method:")
         context.display()

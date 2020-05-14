@@ -10,6 +10,9 @@ import ctypes as ct
 import sys
 
 
+#
+# Creates a string buffer for interacting with C strings
+#
 def create_string_buffer(length: int) -> bytes:
     return " ".encode("utf-8") * length
 
@@ -107,7 +110,11 @@ class CmwalibMetadata(ct.Structure):
                 ('observation_name', ct.c_char_p),
                 ('mode', ct.c_char_p),
                 ('scheduled_start_utc', ct.c_uint64),
+                ('scheduled_end_utc', ct.c_uint64),
                 ('scheduled_start_mjd', ct.c_double),
+                ('scheduled_end_mjd', ct.c_double),
+                ('scheduled_start_unix_time_milliseconds', ct.c_uint64),
+                ('scheduled_end_unix_time_milliseconds', ct.c_uint64),
                 ('scheduled_duration_milliseconds', ct.c_uint64),
                 ('quack_time_duration_milliseconds', ct.c_uint64),
                 ('good_time_unix_milliseconds', ct.c_uint64),
@@ -253,3 +260,49 @@ mwalib.mwalibCoarseChannel_get.restype = ct.c_void_p
 # mwalibCoarseChannel.free()
 #
 mwalib.mwalibCoarseChannel_free.argtypes = (ct.POINTER(CmwalibCoarseChannel),)
+
+
+#
+# CmwalibBaseline struct
+#
+class CmwalibBaseline(ct.Structure):
+    _fields_ = [('antenna1_index', ct.c_size_t),
+                ('antenna2_index', ct.c_size_t), ]
+
+
+#
+# mwalibBaseline.get()
+#
+mwalib.mwalibBaseline_get.argtypes = \
+    (ct.POINTER(CmwalibContextS),  # context_ptr
+     ct.c_size_t,                  # input baseline_index
+     ct.c_char_p,                  # error message
+     ct.c_size_t)                  # length of error message
+mwalib.mwalibBaseline_get.restype = ct.c_void_p
+
+#
+# mwalibBaseline.free()
+#
+mwalib.mwalibBaseline_free.argtypes = (ct.POINTER(CmwalibBaseline),)
+
+#
+# CmwalibVisibilityPol struct
+#
+class CmwalibVisibilityPol(ct.Structure):
+    _fields_ = [('polarisation', ct.c_char_p), ]
+
+
+#
+# mwalibVisibilityPol.get()
+#
+mwalib.mwalibVisibilityPol_get.argtypes = \
+    (ct.POINTER(CmwalibContextS),  # context_ptr
+     ct.c_size_t,                  # input visibility_pol_index
+     ct.c_char_p,                  # error message
+     ct.c_size_t)                  # length of error message
+mwalib.mwalibVisibilityPol_get.restype = ct.c_void_p
+
+#
+# mwalibVisibilityPol.free()
+#
+mwalib.mwalibVisibilityPol_free.argtypes = (ct.POINTER(CmwalibVisibilityPol),)
