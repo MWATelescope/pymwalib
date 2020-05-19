@@ -6,7 +6,7 @@ correlator.
 
 ## Prerequisites
 * Python >=3.6
-* mwalib (pymwalib release major version should match mwalib major version- for prerelease versions <1.0.0, compatibility is via the minor version number 0.N.*). See [Installing mwalib](##Installing mwalib)
+* mwalib (pymwalib release major version should match mwalib major version- for prerelease versions <1.0.0, compatibility is via the minor version number 0.N.*). See Installing mwalib section below.
 * numpy
  
 ## Installing mwalib
@@ -25,7 +25,7 @@ $ tar -xvf libmwalib-0.3.0-linux_x86_64.tar.gz -C mwalib
 $ sudo cp lib/mwalib.* /usr/local/lib/.
 $ sudo cp include/mwalib.h /usr/local/include/.
 ```
-  - OR B) Append the path to the library files to your `LD_LIBRARY` path. `/path/to/mwalib/lib_directory` is the absolute path to the `lib` directory from the extracted `mwalib` release. NOTE: to make this change permanent for any new login sessions you should add the `export` line to your `.bashrc` file.
+  - OR B) Append the path to the library files to your `LD_LIBRARY` path. `/absolute/path/to/mwalib/lib/directory` is the absolute path to the `lib` directory from the extracted `mwalib` release. NOTE: to make this change permanent for any new login sessions you should add the `export` line to your `.bashrc` file.
 ```bash
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/absolute/path/to/mwalib/lib/directory
 ```
