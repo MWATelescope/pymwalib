@@ -7,7 +7,6 @@ correlator.
 ## Prerequisites
 * Python >=3.6
 * mwalib (pymwalib release major version should match mwalib major version- for prerelease versions <1.0.0, compatibility is via the minor version number 0.N.*). See [Installing mwalib](##Installing mwalib)
-* astropy
 * numpy
  
 ## Installing mwalib
