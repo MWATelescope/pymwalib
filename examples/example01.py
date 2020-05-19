@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# pymwalib
+# pymwalib examples/example01 - run through all of pymwalib's objects
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,6 +18,13 @@ if __name__ == "__main__":
                         help="Paths to the gpubox files.")
     args = parser.parse_args()
 
+    #
+    # Create a context and use it for all the examples below
+    #
+    # The context object will validate the input args and
+    # metadata of the observation matches the contents of
+    # the gpubox files passed in.
+    #
     with Context(args.metafits, args.gpuboxes) as context:
         # Test printing via repr(context)
         print("\n\n\nTesting Context metadata:")
