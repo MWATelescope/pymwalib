@@ -136,21 +136,24 @@ class Context:
     def _get_context(self, metafits_filename: str, gpubox_filenames: list):
         """This method will read and validate the metafits and gpubox files. If all has worked, then
         the context object can be used in subsequent calls to populate aspects of this class."""
-        # Encode all inputs as UTF-8.
-        m = ct.c_char_p(metafits_filename.encode("utf-8"))
+        if mwalib:
+            # Encode all inputs as UTF-8.
+            m = ct.c_char_p(metafits_filename.encode("utf-8"))
 
-        # https://stackoverflow.com/questions/4145775/how-do-i-convert-a-python-list-into-a-c-array-by-using-ctypes
-        encoded = []
-        for g in gpubox_filenames:
-            encoded.append(ct.c_char_p(g.encode("utf-8")))
-        seq = ct.c_char_p * len(encoded)
-        g = seq(*encoded)
-        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
-        self._context_object = mwalib.mwalibContext_get(
-            m, g, len(encoded), error_message, ERROR_MESSAGE_LEN)
+            # https://stackoverflow.com/questions/4145775/how-do-i-convert-a-python-list-into-a-c-array-by-using-ctypes
+            encoded = []
+            for g in gpubox_filenames:
+                encoded.append(ct.c_char_p(g.encode("utf-8")))
+            seq = ct.c_char_p * len(encoded)
+            g = seq(*encoded)
+            error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+            self._context_object = mwalib.mwalibContext_get(
+                m, g, len(encoded), error_message, ERROR_MESSAGE_LEN)
 
-        if not self._context_object:
-            raise ContextGetContextError(f"Error creating context object: {error_message.decode('utf-8').rstrip()}")
+            if not self._context_object:
+                raise ContextGetContextError(f"Error creating context object: {error_message.decode('utf-8').rstrip()}")
+        else:
+            raise ContextGetContextError(f"Error creating context object: libmwalib.so is not loaded.")
 
     def _get_metadata(self):
         """Retrieve all of the context metadata and populate this class."""
