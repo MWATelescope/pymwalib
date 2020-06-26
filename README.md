@@ -63,3 +63,17 @@ $ source env/bin/activate
 ```bash
 (env)$ python examples/example01.py -m path_to_metafits.metafits path_to_gpuboxfile01.fits path_to_gpuboxfile02.fits ... 
 ```
+
+## Docker
+### Build the image
+You can also build a docker container with pymwalib preinstalled:
+```bash
+$ docker build . -t pymwalib:latest
+```
+
+### Run the container
+One way to launch the container is to use docker run, for example:
+```
+docker run --name my_pymwalib --volume=/host_data:/data --entrypoint="" --rm=true pymwalib:latest python /pymwalib/examples/example01.py -m /data/1101503312.metafits /data/1101503312_20141201210818_gpubox01_00.fits /data/1101503312_20141201210818_gpubox02_00.fits 
+```
+* This assumes /host_data is a directory on the machine running docker (host) containing the gpubox files and metafits for an observation. 
