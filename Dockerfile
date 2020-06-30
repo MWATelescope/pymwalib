@@ -30,4 +30,7 @@ RUN cd /; \
     pip install -r requirements.txt; \
     python setup.py install;
 
+# Install requirements for examples
+RUN pip install joblib
+
 ENTRYPOINT bash
