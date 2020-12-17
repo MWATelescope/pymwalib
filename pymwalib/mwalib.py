@@ -18,6 +18,12 @@ def create_string_buffer(length: int) -> bytes:
 
 
 #
+# CmwalibMessageQueueS struct
+#
+class CmwalibMessageQueueS(ct.Structure):
+    pass
+
+#
 # CmwalibContextS struct
 #
 class CmwalibContextS(ct.Structure):
@@ -42,6 +48,25 @@ except Exception as library_load_err:
 # Define the Library functions if the library was loaded
 #
 if mwalib:
+    #
+    # mwalibMessageQueue.get()
+    #
+    mwalib.mwalibMessageQueue_get.argtypes = ()
+    mwalib.mwalibMessageQueue_get.restype = ct.POINTER(CmwalibMessageQueueS)
+
+    #
+    # mwalibMessageQueue.get_next_message()
+    #
+    mwalib.mwalibMessageQueue_get_next_message.argtypes = \
+        (ct.POINTER(CmwalibMessageQueueS),
+         ct.c_char_p,   # message
+         ct.c_size_t,)  # length of error message
+    mwalib.mwalibMessageQueue_get_next_message.restype = ct.c_uint32
+
+    #
+    # mwalibMessageQueue.free()
+    #
+    mwalib.mwalibMessageQueue_free.argtypes = (ct.POINTER(CmwalibMessageQueueS),)
 
     #
     # mwalibContext.get()
@@ -51,7 +76,8 @@ if mwalib:
          ct.POINTER(ct.c_char_p),  # gpuboxes
          ct.c_size_t,              # gpubox count
          ct.c_char_p,              # error message
-         ct.c_size_t)              # length of error message
+         ct.c_size_t,              # length of error message
+         ct.POINTER(CmwalibMessageQueueS)) # pointer to message queue
     mwalib.mwalibContext_get.restype = ct.POINTER(CmwalibContextS)
 
     mwalib.mwalibContext_free.argtypes = (ct.POINTER(CmwalibContextS), )

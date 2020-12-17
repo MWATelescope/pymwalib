@@ -25,10 +25,16 @@ from pymwalib.visibility_pol import VisibilityPol
 
 
 ERROR_MESSAGE_LEN = 1024
+MESSAGE_LEN = 4096
 
 
 class ContextError(Exception):
     """Base class for other exceptions"""
+    pass
+
+
+class ContextGetMessageQueueError(ContextError):
+    """Raised when call to C mwalibMessageQueue_get fails"""
     pass
 
 
@@ -101,10 +107,13 @@ class Context:
     """Main class to interface with mwalib"""
     def __init__(self, metafits_filename: str, gpubox_filenames: list):
         """Take metafits and gpubox files, and populate this class via mwalib"""
-        # First populate the context object
+        # First create a message queue so we get messages from mwalib as it works
+        self._get_message_queue()
+
+        # Next populate the context object
         self._get_context(metafits_filename, gpubox_filenames)
 
-        # Second populate the metadata object
+        # next populate the metadata object
         self._get_metadata()
 
         # Populate timesteps
@@ -133,6 +142,19 @@ class Context:
         if self._context_object:
             mwalib.mwalibContext_free(self._context_object)
 
+        if self._message_queue_object:
+            mwalib.mwalibMessageQueue_free(self._message_queue_object)
+
+    def _get_message_queue(self):
+        if mwalib:
+            self._message_queue_object = mwalib.mwalibMessageQueue_get()
+
+            if not self._message_queue_object:
+                raise ContextGetMessageQueueError(f"Error creating message_queue object")
+        else:
+            raise ContextGetContextError(f"Error creating message_queue object: libmwalib.so is not loaded.")
+
+
     def _get_context(self, metafits_filename: str, gpubox_filenames: list):
         """This method will read and validate the metafits and gpubox files. If all has worked, then
         the context object can be used in subsequent calls to populate aspects of this class."""
@@ -148,7 +170,7 @@ class Context:
             g = seq(*encoded)
             error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
             self._context_object = mwalib.mwalibContext_get(
-                m, g, len(encoded), error_message, ERROR_MESSAGE_LEN)
+                m, g, len(encoded), error_message, ERROR_MESSAGE_LEN, self._message_queue_object)
 
             if not self._context_object:
                 raise ContextGetContextError(f"Error creating context object: {error_message.decode('utf-8').rstrip()}")
@@ -377,6 +399,23 @@ class Context:
 
                 # We're now finished with the C memory, so free it
                 mwalib.mwalibVisibilityPol_free(c_object)
+
+    def get_next_message(self):
+        """Returns the next message from mwalib or None"""
+        message = create_string_buffer(MESSAGE_LEN)
+
+        return_code = mwalib.mwalibMessageQueue_get_next_message(self._message_queue_object, message, MESSAGE_LEN)
+
+        if return_code == 0:
+            # Return the message
+            return message.decode('utf-8').rstrip()
+        elif return_code == 2:
+            # No message to return
+            return None
+        else:
+            # Error
+            raise ContextError(f"Error retrieving the next message from mwalib: ret code {return_code}:"
+                               f" {message.decode('utf-8').rstrip()}")
 
     def display(self):
         """Displays a human readable summary of the observation"""

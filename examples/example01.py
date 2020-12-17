@@ -102,3 +102,9 @@ if __name__ == "__main__":
 
                 total_sum += this_sum
         print("Total sum by frequency: {}".format(total_sum))
+
+        # List any messages after population
+        message = context.get_next_message()
+        while message is not None:
+            print(message)
+            message = context.get_next_message()

@@ -15,6 +15,7 @@ import numpy as np
 import multiprocessing
 from joblib import Parallel, delayed
 from pymwalib.context import Context
+import threading
 import time
 
 
@@ -43,6 +44,10 @@ def sum_by_baseline_slow(metafits_filename: str, gpubox_filenames: list) -> floa
     total_sum = 0.
 
     with Context(metafits_filename, gpubox_filenames) as context:
+        # start a messaging thread
+        message_thread = threading.Thread(target=message_watch_thread_func, args=(context,))
+        message_thread.start()
+
         for coarse_channel_index in range(0, context.num_coarse_channels):
             if coarse_channel_index < context.num_coarse_channels:
                 print(f"sum_by_baseline_slow: Summing {context.num_timesteps} timesteps "
@@ -58,7 +63,21 @@ def sum_by_baseline_slow(metafits_filename: str, gpubox_filenames: list) -> floa
                     data_sum = np.sum(data, dtype=np.float64)
                     total_sum += data_sum
 
+    message_thread.join()
+
     return total_sum
+
+
+def message_watch_thread_func(context):
+    if context is None:
+        return
+
+    message = context.get_next_message()
+
+    while message is not None:
+        print(message)
+        message = context.get_next_message()
+    time.sleep(0.1)
 
 
 if __name__ == "__main__":
