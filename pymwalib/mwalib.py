@@ -194,7 +194,9 @@ if mwalib:
                     ('height_m', ct.c_double),
                     ('vcs_order', ct.c_uint32),
                     ('subfile_order', ct.c_uint32),
-                    ('flagged', ct.c_bool),]
+                    ('flagged', ct.c_bool),
+                    ('receiver_number', ct.c_uint32),
+                    ('receiver_slot_number', ct.c_uint32)]
 
 
     #

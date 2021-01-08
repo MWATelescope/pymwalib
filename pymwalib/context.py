@@ -302,7 +302,9 @@ class Context:
                                       c_object.height_m,
                                       c_object.vcs_order,
                                       c_object.subfile_order,
-                                      c_object.flagged,))
+                                      c_object.flagged,
+                                      c_object.receiver_number,
+                                      c_object.receiver_slot_number))
 
                 # We're now finished with the C memory, so free it
                 mwalib.mwalibRFInput_free(c_object)

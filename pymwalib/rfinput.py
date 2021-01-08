@@ -40,7 +40,9 @@ class RFInput:
                  height_m: float,
                  vcs_order: int,
                  subfile_order: int,
-                 flagged: bool):
+                 flagged: bool,
+                 receiver_number: int,
+                 receiver_slot_number: int):
         """Initialise the class"""
         self.index: int = index
         self.input: int = input
@@ -55,6 +57,8 @@ class RFInput:
         self.vcs_order: int = vcs_order
         self.subfile_order: int = subfile_order
         self.flagged: bool = flagged
+        self.receiver_number = receiver_number
+        self.receiver_slot_number = receiver_slot_number
 
     def __repr__(self):
         """Returns a representation of the class"""
@@ -71,4 +75,6 @@ class RFInput:
                f"height_m: {self.height_m}, " \
                f"vcs_order: {self.vcs_order}, " \
                f"subfile_order: {self.subfile_order}, " \
-               f"flagged: {self.flagged})"
+               f"flagged: {self.flagged}, " \
+               f"receiver_number: {self.receiver_number}, " \
+               f"receiver_slot_number: {self.receiver_slot_number})"
