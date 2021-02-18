@@ -12,21 +12,21 @@
 #
 import argparse
 import numpy as np
-import multiprocessing
+import os
 from joblib import Parallel, delayed
-from pymwalib.context import Context
+from pymwalib.correlator_context import CorrelatorContext
 import time
 
 
 def sum_by_baseline_task(metafits_filename: str, gpubox_filenames: list, coarse_channel_index: int) -> float:
     channel_sum = 0.
 
-    with Context(metafits_filename, gpubox_filenames) as context:
-        if coarse_channel_index < context.num_coarse_channels:
-            print(f"sum_by_baseline_task: Summing {context.num_timesteps} timesteps "
+    with CorrelatorContext(metafits_filename, gpubox_filenames) as context:
+        if coarse_channel_index < context.correlator_metadata.num_coarse_channels:
+            print(f"sum_by_baseline_task: Summing {context.correlator_metadata.num_timesteps} timesteps "
                   f"and coarse channel index {coarse_channel_index}...")
 
-            for t in range(0, context.num_timesteps):
+            for t in range(0, context.correlator_metadata.num_timesteps):
                 try:
                     data = context.read_by_frequency(t, coarse_channel_index)
                 except Exception as e:
@@ -42,12 +42,12 @@ def sum_by_baseline_task(metafits_filename: str, gpubox_filenames: list, coarse_
 def sum_by_baseline_slow(metafits_filename: str, gpubox_filenames: list) -> float:
     total_sum = 0.
 
-    with Context(metafits_filename, gpubox_filenames) as context:
-        for coarse_channel_index in range(0, context.num_coarse_channels):
-            if coarse_channel_index < context.num_coarse_channels:
-                print(f"sum_by_baseline_slow: Summing {context.num_timesteps} timesteps "
+    with CorrelatorContext(metafits_filename, gpubox_filenames) as context:
+        for coarse_channel_index in range(0, context.correlator_metadata.num_coarse_channels):
+            if coarse_channel_index < context.correlator_metadata.num_coarse_channels:
+                print(f"sum_by_baseline_slow: Summing {context.correlator_metadata.num_timesteps} timesteps "
                       f"and coarse channel index {coarse_channel_index}...")
-                for timestep_index in range(0, context.num_timesteps):
+                for timestep_index in range(0, context.correlator_metadata.num_timesteps):
                     try:
                         data = context.read_by_baseline(timestep_index,
                                                         coarse_channel_index)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # fast sum using all cores
-    num_cores = multiprocessing.cpu_count()
+    num_cores = len(os.sched_getaffinity(0))
     print(f"Using {num_cores} cores to fast sum all hdus...")
 
     start_time_fast = time.time()

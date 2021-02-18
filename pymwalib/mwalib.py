@@ -18,9 +18,23 @@ def create_string_buffer(length: int) -> bytes:
 
 
 #
-# CmwalibContextS struct
+# C MetafitsContext struct
 #
-class CmwalibContextS(ct.Structure):
+class CMetafitsContextS(ct.Structure):
+    pass
+
+
+#
+# C CorrelatorContext struct
+#
+class CCorrelatorContextS(ct.Structure):
+    pass
+
+
+#
+# C VoltageContext struct
+#
+class CVoltageContextS(ct.Structure):
     pass
 
 
@@ -42,57 +56,35 @@ except Exception as library_load_err:
 # Define the Library functions if the library was loaded
 #
 if mwalib:
+    #
+    # mwalib_metafits_context_new()
+    #
+    mwalib.mwalib_metafits_context_new.argtypes = \
+        (ct.c_char_p,                               # metafits
+         ct.POINTER(ct.POINTER(CMetafitsContextS)), # Pointer to pointer to CorrelatorContext
+         ct.c_char_p,                               # error message
+         ct.c_size_t)                               # length of error message
 
     #
-    # mwalibContext.get()
+    # mwalib_metafits_context_free()
     #
-    mwalib.mwalibContext_get.argtypes = \
-        (ct.c_char_p,              # metafits
-         ct.POINTER(ct.c_char_p),  # gpuboxes
-         ct.c_size_t,              # gpubox count
-         ct.c_char_p,              # error message
-         ct.c_size_t)              # length of error message
-    mwalib.mwalibContext_get.restype = ct.POINTER(CmwalibContextS)
-
-    mwalib.mwalibContext_free.argtypes = (ct.POINTER(CmwalibContextS), )
+    mwalib.mwalib_metafits_context_free.argtypes = (ct.POINTER(CMetafitsContextS),)
+    mwalib.mwalib_metafits_context_free.restype = ct.c_int32
 
     #
-    # mwalibContext.display()
+    # mwalib_metafits_context_display()
     #
-    mwalib.mwalibContext_display.argtypes = (ct.POINTER(CmwalibContextS), )
-    mwalib.mwalibContext_display.restype = ct.c_uint32
-
-    #
-    # mwalibContext.read_by_baseline()
-    #
-    mwalib.mwalibContext_read_by_baseline.argtypes = \
-        (ct.POINTER(CmwalibContextS), # context
-         ct.c_size_t,                # input timestep_index
-         ct.c_size_t,                # input coarse_channel_index
-         ct.POINTER(ct.c_float),     # buffer_ptr
-         ct.c_size_t)                # buffer_len
-    mwalib.mwalibContext_read_by_baseline.restype = ct.c_int32
-
-    #
-    # mwalibContext.read_by_frequency()
-    #
-    mwalib.mwalibContext_read_by_frequency.argtypes = \
-        (ct.POINTER(CmwalibContextS), # context
-         ct.c_size_t,                # input timestep_index
-         ct.c_size_t,                # input coarse_channel_index
-         ct.POINTER(ct.c_float),     # buffer_ptr
-         ct.c_size_t)                # buffer_len
-    mwalib.mwalibContext_read_by_frequency.restype = ct.c_int32
+    mwalib.mwalib_metafits_context_display.argtypes = (ct.POINTER(CCorrelatorContextS),)
+    mwalib.mwalib_metafits_context_display.restype = ct.c_int32
 
 
     #
-    # CmwalibMetadata struct
+    # C MetafitsMetadata struct
     #
-    class CmwalibMetadata(ct.Structure):
+    class CMetafitsMetadataS(ct.Structure):
         _fields_ = [('obsid', ct.c_uint32),
-                    ('corr_version', ct.c_uint32),
                     ('mwa_latitude_radians', ct.c_double),
-                    ('mwa_longitude_radians',  ct.c_double),
+                    ('mwa_longitude_radians', ct.c_double),
                     ('mwa_altitude_metres', ct.c_double),
                     ('coax_v_factor', ct.c_double),
                     ('global_analogue_attenuation_db', ct.c_double),
@@ -123,66 +115,252 @@ if mwalib:
                     ('scheduled_duration_milliseconds', ct.c_uint64),
                     ('quack_time_duration_milliseconds', ct.c_uint64),
                     ('good_time_unix_milliseconds', ct.c_uint64),
+                    ('num_antennas', ct.c_size_t),
+                    ('num_rf_inputs', ct.c_size_t),
+                    ('num_antenna_pols', ct.c_size_t),
+                    ('num_coarse_channels', ct.c_size_t),
+                    ('observation_bandwidth_hz', ct.c_uint32),
+                    ('coarse_channel_width_hz', ct.c_uint32),
+                    ]
+
+    #
+    # mwalib_metafits_metadata_get()
+    #
+    mwalib.mwalib_metafits_metadata_get.argtypes = \
+        (ct.POINTER(CMetafitsContextS),                 # metafits context pointer OR
+         ct.POINTER(CCorrelatorContextS),               # correlator context pointer OR
+         ct.POINTER(CVoltageContextS),                  # voltage context pointer
+         ct.POINTER(ct.POINTER(CMetafitsMetadataS)),    # Pointer to pointer to CMetafitsMetadataS
+         ct.c_char_p,                                   # error message
+         ct.c_size_t)                                   # length of error message
+    mwalib.mwalib_metafits_metadata_get.restype = ct.c_int32
+
+    #
+    # mwalib_metafits_metadata_free()
+    #
+    mwalib.mwalib_metafits_metadata_free.argtypes = (ct.POINTER(CMetafitsMetadataS),)
+    mwalib.mwalib_metafits_metadata_free.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_context_new()
+    #
+    mwalib.mwalib_correlator_context_new.argtypes = \
+        (ct.c_char_p,                                   # metafits
+         ct.POINTER(ct.c_char_p),                       # gpuboxes files array
+         ct.c_size_t,                                   # gpubox count
+         ct.POINTER(ct.POINTER(CCorrelatorContextS)),   # Pointer to pointer to CorrelatorContext
+         ct.c_char_p,                                   # error message
+         ct.c_size_t)                                   # length of error message
+    mwalib.mwalib_correlator_context_new.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_context_free()
+    #
+    mwalib.mwalib_correlator_context_free.argtypes = (ct.POINTER(CCorrelatorContextS),)
+    mwalib.mwalib_correlator_context_free.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_context_display()
+    #
+    mwalib.mwalib_correlator_context_display.argtypes = (ct.POINTER(CCorrelatorContextS),)
+    mwalib.mwalib_correlator_context_display.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_context_read_by_baseline()
+    #
+    mwalib.mwalib_correlator_context_read_by_baseline.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),   # context
+         ct.c_size_t,                       # input timestep_index
+         ct.c_size_t,                       # input coarse_channel_index
+         ct.POINTER(ct.c_float),            # buffer_ptr
+         ct.c_size_t,                       # buffer_len
+         ct.c_char_p,                       # error message
+         ct.c_size_t)                        # length of error message
+    mwalib.mwalib_correlator_context_read_by_baseline.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_context_read_by_frequency()
+    #
+    mwalib.mwalib_correlator_context_read_by_frequency.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),   # context
+         ct.c_size_t,                       # input timestep_index
+         ct.c_size_t,                       # input coarse_channel_index
+         ct.POINTER(ct.c_float),            # buffer_ptr
+         ct.c_size_t,                       # buffer_len
+         ct.c_char_p,                       # error message
+         ct.c_size_t)                       # length of error message
+    mwalib.mwalib_correlator_context_read_by_frequency.restype = ct.c_int32
+
+    #
+    # C CorrelatorMetadata struct
+    #
+    class CCorrelatorMetadataS(ct.Structure):
+        _fields_ = [('corr_version', ct.c_uint32),
                     ('start_unix_time_milliseconds', ct.c_uint64),
                     ('end_unix_time_milliseconds', ct.c_uint64),
                     ('duration_milliseconds', ct.c_uint64),
                     ('num_timesteps', ct.c_size_t),
-                    ('num_antennas', ct.c_size_t),
                     ('num_baselines', ct.c_size_t),
-                    ('num_rf_inputs', ct.c_size_t),
-                    ('num_antenna_pols', ct.c_size_t),
                     ('num_visibility_pols', ct.c_size_t),
-                    ('num_coarse_channels', ct.c_size_t),
                     ('integration_time_milliseconds', ct.c_uint64),
-                    ('fine_channel_width_hz', ct.c_uint32),
-                    ('observation_bandwidth_hz', ct.c_uint32),
+                    ('num_coarse_channels', ct.c_size_t),
+                    ('bandwidth_hz', ct.c_uint32),
                     ('coarse_channel_width_hz', ct.c_uint32),
+                    ('fine_channel_width_hz', ct.c_uint32),
                     ('num_fine_channels_per_coarse', ct.c_size_t),
                     ('num_timestep_coarse_channel_bytes', ct.c_size_t),
                     ('num_timestep_coarse_channel_floats', ct.c_size_t),
                     ('num_gpubox_files', ct.c_size_t)
                     ]
+    #
+    # mwalib_correlator_metadata_get()
+    #
+    mwalib.mwalib_correlator_metadata_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),               # correlator context pointer
+         ct.POINTER(ct.POINTER(CCorrelatorMetadataS)),  # Pointer to pointer to CCorrelatorMetadataS
+         ct.c_char_p,                                   # error message
+         ct.c_size_t)                                   # length of error message
+    mwalib.mwalib_correlator_metadata_get.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_metadata_free()
+    #
+    mwalib.mwalib_correlator_metadata_free.argtypes = (ct.POINTER(CCorrelatorMetadataS),)
+    mwalib.mwalib_correlator_metadata_free.restype = ct.c_int32
+
+    #
+    # C VoltageMetadata struct
+    #
+    class CVoltageMetadataS(ct.Structure):
+        _fields_ = [('corr_version', ct.c_uint32),
+                    ('start_gps_time_milliseconds', ct.c_uint64),
+                    ('end_gps_time_milliseconds', ct.c_uint64),
+                    ('duration_milliseconds', ct.c_uint64),
+                    ('num_timesteps', ct.c_size_t),
+                    ('num_coarse_channels', ct.c_size_t),
+                    ('bandwidth_hz', ct.c_uint32),
+                    ('coarse_channel_width_hz', ct.c_uint32),
+                    ('fine_channel_width_hz', ct.c_uint32),
+                    ('num_fine_channels_per_coarse', ct.c_size_t),
+                    ]
+
+    #
+    # mwalib_voltage_metadata_get()
+    #
+    mwalib.mwalib_voltage_metadata_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),           # correlator context pointer
+         ct.POINTER(ct.POINTER(CVoltageMetadataS)), # Pointer to pointer to CVoltageMetadata
+         ct.c_char_p,                               # error message
+         ct.c_size_t)                               # length of error message
+    mwalib.mwalib_voltage_metadata_get.restype = ct.c_int32
+
+    #
+    # mwalib_voltage_metadata_free()
+    #
+    mwalib.mwalib_voltage_metadata_free.argtypes = (ct.POINTER(CVoltageMetadataS),)
+    mwalib.mwalib_voltage_metadata_free.restype = ct.c_int32
+
+    #
+    # C Antenna struct
+    #
+    class CAntennaS(ct.Structure):
+        _fields_ = [('antenna', ct.c_uint32),
+                    ('tile_id', ct.c_uint32),
+                    ('tile_name', ct.c_char_p), ]
 
 
     #
-    # mwalibMetadata.get()
+    # mwalib_antennas_get()
     #
-    mwalib.mwalibMetadata_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_char_p,                 # error message
-         ct.c_size_t)                 # length of error message
-    mwalib.mwalibMetadata_get.restype = ct.c_void_p
-
-    mwalib.mwalibMetadata_free.argtypes = (ct.POINTER(CmwalibMetadata),)
-
-
-    #
-    # CmwalibTimeStep struct
-    #
-    class CmwalibTimeStep(ct.Structure):
-        _fields_ = [('unix_time_ms', ct.c_uint64),]
-
+    mwalib.mwalib_antennas_get.argtypes = \
+        (ct.POINTER(CMetafitsContextS),     # metafits context pointer OR
+         ct.POINTER(CCorrelatorContextS),   # correlator context pointer OR
+         ct.POINTER(CVoltageContextS),      # voltage context pointer
+         ct.POINTER(ct.POINTER(CAntennaS)), # out pointer to array of antennas
+         ct.POINTER(ct.c_size_t),           # out number of antennas in out array
+         ct.c_char_p,                       # error message
+         ct.c_size_t)                       # length of error message
+    mwalib.mwalib_antennas_get.restype = ct.c_int32
 
     #
-    # mwalibTimeStep.get()
+    # mwalib_antennas_free()
     #
-    mwalib.mwalibTimeStep_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_size_t,                  # input timestep_index
-         ct.c_char_p,                  # error message
-         ct.c_size_t)                  # length of error message
-    mwalib.mwalibTimeStep_get.restype = ct.c_void_p
+    mwalib.mwalib_antennas_free.argtypes = (ct.POINTER(CAntennaS),
+                                            ct.c_size_t)  # number of array elements
+    mwalib.mwalib_antennas_get.restype = ct.c_int32
 
     #
-    # mwalibTimeStep.free()
+    # C Baseline struct
     #
-    mwalib.mwalibTimeStep_free.argtypes = (ct.POINTER(CmwalibTimeStep),)
+    class CBaselineS(ct.Structure):
+        _fields_ = [('antenna1_index', ct.c_size_t),
+                    ('antenna2_index', ct.c_size_t), ]
 
 
     #
-    # CmwalibRFInput struct
+    # mwalib_correlator_baselines_get()
     #
-    class CmwalibRFInput(ct.Structure):
+    mwalib.mwalib_correlator_baselines_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),       # context_ptr
+         ct.POINTER(ct.POINTER(CBaselineS)),    # out pointer to array of baselines
+         ct.POINTER(ct.c_size_t),               # out number of baselines in out array
+         ct.c_char_p,                           # error message
+         ct.c_size_t)                           # length of error message
+    mwalib.mwalib_correlator_baselines_get.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_baselines_free()
+    #
+    mwalib.mwalib_baselines_free.argtypes = (ct.POINTER(CBaselineS),
+                                                        ct.c_size_t)  # number of array elements
+    mwalib.mwalib_baselines_free.restype = ct.c_int32
+
+    #
+    # C CoarseChannel struct
+    #
+    class CCoarseChannelS(ct.Structure):
+        _fields_ = [('correlator_channel_number', ct.c_size_t),
+                    ('receiver_channel_number', ct.c_size_t),
+                    ('gpubox_number', ct.c_size_t),
+                    ('channel_width_hz', ct.c_uint32),
+                    ('channel_start_hz', ct.c_uint32),
+                    ('channel_centre_hz', ct.c_uint32),
+                    ('channel_end_hz', ct.c_uint32), ]
+
+
+    #
+    # mwalib_correlator_coarse_channels_get()
+    #
+    mwalib.mwalib_correlator_coarse_channels_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),           # context_ptr
+         ct.POINTER(ct.POINTER(CCoarseChannelS)),   # out pointer to array of coarse channels
+         ct.POINTER(ct.c_size_t),                   # out number of coarse channels in out array
+         ct.c_char_p,                               # error message
+         ct.c_size_t)                               # length of error message
+    mwalib.mwalib_correlator_coarse_channels_get.restype = ct.c_int32
+
+    #
+    # mwalib_voltage_coarse_channels_get()
+    #
+    mwalib.mwalib_voltage_coarse_channels_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),           # context_ptr
+         ct.POINTER(ct.POINTER(CCoarseChannelS)),   # out pointer to array of coarse channels
+         ct.POINTER(ct.c_size_t),                   # out number of coarse channels in out array
+         ct.c_char_p,                               # error message
+         ct.c_size_t)                               # length of error message
+    mwalib.mwalib_voltage_coarse_channels_get.restype = ct.c_int32
+
+    #
+    # mwalib_coarse_channels_free()
+    #
+    mwalib.mwalib_coarse_channels_free.argtypes = (ct.POINTER(CCoarseChannelS),
+                                                   ct.c_size_t)  # number of array elements
+    mwalib.mwalib_coarse_channels_free.restype = ct.c_int32
+
+    #
+    # C RFInput struct
+    #
+    class CRFInputS(ct.Structure):
         _fields_ = [('input', ct.c_uint32),
                     ('antenna', ct.c_uint32),
                     ('tile_id', ct.c_uint32),
@@ -198,118 +376,83 @@ if mwalib:
                     ('receiver_number', ct.c_uint32),
                     ('receiver_slot_number', ct.c_uint32)]
 
+    #
+    # mwalib_rfinputs_get()
+    #
+    mwalib.mwalib_rfinputs_get.argtypes = \
+        (ct.POINTER(CMetafitsContextS),     # metafits context pointer OR
+         ct.POINTER(CCorrelatorContextS),   # correlator context pointer OR
+         ct.POINTER(CVoltageContextS),      # voltage context pointer
+         ct.POINTER(ct.POINTER(CRFInputS)), # out pointer to array of rfinputs
+         ct.POINTER(ct.c_size_t),           # out number of rfinputs in out array
+         ct.c_char_p,                       # error message
+         ct.c_size_t)                       # length of error message
+    mwalib.mwalib_rfinputs_get.restype = ct.c_int32
 
     #
-    # mwalibRFInput.get()
+    # mwalib_rfinputs_free()
     #
-    mwalib.mwalibRFInput_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_size_t,                  # input rfinput_index
-         ct.c_char_p,                  # error message
-         ct.c_size_t)                  # length of error message
-    mwalib.mwalibRFInput_get.restype = ct.c_void_p
-
-    #
-    # mwalibRFInput.free()
-    #
-    mwalib.mwalibRFInput_free.argtypes = (ct.POINTER(CmwalibRFInput),)
-
-
-    #
-    # CmwalibAntenna struct
-    #
-    class CmwalibAntenna(ct.Structure):
-        _fields_ = [('antenna', ct.c_uint32),
-                    ('tile_id', ct.c_uint32),
-                    ('tile_name', ct.c_char_p),]
+    mwalib.mwalib_rfinputs_free.argtypes = (ct.POINTER(CRFInputS),
+                                            ct.c_size_t)             # number of array elements
+    mwalib.mwalib_rfinputs_free.restype = ct.c_int32
 
 
     #
-    # mwalibAntenna.get()
+    # C TimeStep struct
     #
-    mwalib.mwalibAntenna_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_size_t,                  # input antenna_index
-         ct.c_char_p,                  # error message
-         ct.c_size_t)                  # length of error message
-    mwalib.mwalibAntenna_get.restype = ct.c_void_p
+    class CTimeStepS(ct.Structure):
+        _fields_ = [('unix_time_milliseconds', ct.c_uint64),
+                    ('gps_time_milliseconds', ct.c_uint64),]
 
     #
-    # mwalibAntenna.free()
+    # mwalib_correlator_timesteps_get()
     #
-    mwalib.mwalibAntenna_free.argtypes = (ct.POINTER(CmwalibAntenna),)
-
-
-    #
-    # CmwalibCoarseChannel struct
-    #
-    class CmwalibCoarseChannel(ct.Structure):
-        _fields_ = [('correlator_channel_number', ct.c_size_t),
-                    ('receiver_channel_number', ct.c_size_t),
-                    ('gpubox_number', ct.c_size_t),
-                    ('channel_width_hz', ct.c_uint32),
-                    ('channel_start_hz', ct.c_uint32),
-                    ('channel_centre_hz', ct.c_uint32),
-                    ('channel_end_hz', ct.c_uint32),]
-
+    mwalib.mwalib_correlator_timesteps_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),       # correlator context pointer
+         ct.POINTER(ct.POINTER(CTimeStepS)),    # out pointer to array of timesteps
+         ct.POINTER(ct.c_size_t),               # out number of timesteps in out array
+         ct.c_char_p,                           # error message
+         ct.c_size_t)                           # length of error message
+    mwalib.mwalib_correlator_timesteps_get.restype = ct.c_int32
 
     #
-    # mwalibCoarseChannel.get()
+    # mwalib_voltage_timesteps_get()
     #
-    mwalib.mwalibCoarseChannel_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_size_t,                  # input antenna_index
-         ct.c_char_p,                  # error message
-         ct.c_size_t)                  # length of error message
-    mwalib.mwalibCoarseChannel_get.restype = ct.c_void_p
+    mwalib.mwalib_voltage_timesteps_get.argtypes = \
+        (ct.POINTER(CVoltageContextS),          # voltage context pointer
+         ct.POINTER(ct.POINTER(CTimeStepS)),    # out pointer to array of timesteps
+         ct.POINTER(ct.c_size_t),                 # out number of timesteps in out array
+         ct.c_char_p,                           # error message
+         ct.c_size_t)                           # length of error message
+    mwalib.mwalib_voltage_timesteps_get.restype = ct.c_int32
 
     #
-    # mwalibCoarseChannel.free()
+    # mwalib_timesteps_free()
     #
-    mwalib.mwalibCoarseChannel_free.argtypes = (ct.POINTER(CmwalibCoarseChannel),)
-
-
-    #
-    # CmwalibBaseline struct
-    #
-    class CmwalibBaseline(ct.Structure):
-        _fields_ = [('antenna1_index', ct.c_size_t),
-                    ('antenna2_index', ct.c_size_t), ]
-
+    mwalib.mwalib_timesteps_free.argtypes = (ct.POINTER(CTimeStepS),
+                                             ct.c_size_t)             # number of array elements
+    mwalib.mwalib_timesteps_free.restype = ct.c_int32
 
     #
-    # mwalibBaseline.get()
+    # C VisibilityPol struct
     #
-    mwalib.mwalibBaseline_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_size_t,                  # input baseline_index
-         ct.c_char_p,                  # error message
-         ct.c_size_t)                  # length of error message
-    mwalib.mwalibBaseline_get.restype = ct.c_void_p
-
-    #
-    # mwalibBaseline.free()
-    #
-    mwalib.mwalibBaseline_free.argtypes = (ct.POINTER(CmwalibBaseline),)
-
-    #
-    # CmwalibVisibilityPol struct
-    #
-    class CmwalibVisibilityPol(ct.Structure):
+    class CVisibilityPolS(ct.Structure):
         _fields_ = [('polarisation', ct.c_char_p), ]
 
-
     #
-    # mwalibVisibilityPol.get()
+    # mwalib_correlator_visibility_pols_get()
     #
-    mwalib.mwalibVisibilityPol_get.argtypes = \
-        (ct.POINTER(CmwalibContextS),  # context_ptr
-         ct.c_size_t,                  # input visibility_pol_index
-         ct.c_char_p,                  # error message
-         ct.c_size_t)                  # length of error message
-    mwalib.mwalibVisibilityPol_get.restype = ct.c_void_p
+    mwalib.mwalib_correlator_visibility_pols_get.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),           # correlator context pointer
+         ct.POINTER(ct.POINTER(CVisibilityPolS)),   # out pointer to array of timesteps
+         ct.POINTER(ct.c_size_t),                   # out number of timesteps in out array
+         ct.c_char_p,                               # error message
+         ct.c_size_t)                               # length of error message
+    mwalib.mwalib_correlator_visibility_pols_get.restype = ct.c_int32
 
     #
     # mwalibVisibilityPol.free()
     #
-    mwalib.mwalibVisibilityPol_free.argtypes = (ct.POINTER(CmwalibVisibilityPol),)
+    mwalib.mwalib_visibility_pols_free.argtypes = (ct.POINTER(CVisibilityPolS),
+                                                   ct.c_size_t)  # number of array elements
+    mwalib.mwalib_visibility_pols_free.restype = ct.c_int32

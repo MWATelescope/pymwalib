@@ -12,6 +12,10 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
+from pymwalib.mwalib import create_string_buffer, mwalib, CVisibilityPolS, CCorrelatorContextS
+from pymwalib.common import ERROR_MESSAGE_LEN
+from pymwalib.errors import *
+import ctypes as ct
 
 
 class VisibilityPol:
@@ -40,3 +44,30 @@ class VisibilityPol:
         return f"{self.__class__.__name__}(" \
                f"Order: {self.index}, " \
                f"UNIX time: {self.polarisation})"
+
+    @staticmethod
+    def get_visibility_pols(correlator_context: ct.POINTER(CCorrelatorContextS)) -> []:
+        """Retrieve all of the visibility_pol metadata and populate a list of visibility_pols."""
+        visibility_pols = []
+        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        c_array_ptr = ct.POINTER(CVisibilityPolS)()
+        c_len_ptr = ct.c_size_t(0)
+
+        if mwalib.mwalib_correlator_visibility_pols_get(correlator_context,
+                                                        ct.byref(c_array_ptr),
+                                                        ct.byref(c_len_ptr),
+                                                        error_message,
+                                                        ERROR_MESSAGE_LEN) != 0:
+            # Error
+            raise ContextCorrelatorVisibilityPolsGetError(f"Error getting visibility_pol object: "
+                                                          f"{error_message.decode('utf-8').rstrip()}")
+        else:
+            for i in range(0, c_len_ptr.value):
+                # Populate all the fields
+                visibility_pols.append(VisibilityPol(i, c_array_ptr[i].polarisation.decode("utf-8")))
+
+            # We're now finished with the C memory, so free it
+            mwalib.mwalib_visibility_pols_free(c_array_ptr, c_len_ptr.value)
+
+            return visibility_pols
