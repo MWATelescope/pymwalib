@@ -20,7 +20,7 @@ import ctypes as ct
 
 class CoarseChannel:
     """
-    A class representing a single mwalibCoarseChannel
+    A class representing a single CoarseChannel
 
     Attributes
     ----------

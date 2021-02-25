@@ -48,7 +48,7 @@ class CorrelatorContext:
         self.antennas = Antenna.get_antennas(None, self._correlator_context_object, None, self.rfinputs)
 
         # Populate baselines
-        self.baselines = Baseline.get_baselines(self._correlator_context_object)
+        self.baselines = Baseline.get_baselines(None, self._correlator_context_object, None)
 
         # Populate coarse channels
         self.coarse_channels = CoarseChannel.get_coarse_channels(self._correlator_context_object, None)
@@ -57,7 +57,7 @@ class CorrelatorContext:
         self.timesteps = TimeStep.get_timesteps(self._correlator_context_object, None)
 
         # Populate visibility pols
-        self.visibility_pols = VisibilityPol.get_visibility_pols(self._correlator_context_object)
+        self.visibility_pols = VisibilityPol.get_visibility_pols(None, self._correlator_context_object, None)
 
     def __enter__(self):
         return self

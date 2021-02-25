@@ -16,10 +16,10 @@ from pymwalib.mwalib import *
 from pymwalib.common import ERROR_MESSAGE_LEN
 from pymwalib.errors import *
 from pymwalib.antenna import Antenna
-from pymwalib.coarse_channel import CoarseChannel
+from pymwalib.baseline import Baseline
 from pymwalib.metafits_metadata import MetafitsMetadata
 from pymwalib.rfinput import RFInput
-from pymwalib.timestep import TimeStep
+from pymwalib.visibility_pol import VisibilityPol
 
 
 class MetafitsContext:
@@ -39,6 +39,12 @@ class MetafitsContext:
 
         # Populate antennas
         self.antennas = Antenna.get_antennas(self._metafits_context_object, None, None, self.rfinputs)
+
+        # Populate baselines
+        self.baselines = Baseline.get_baselines(self._metafits_context_object, None, None)
+
+        # Populate visibility pols
+        self.baselines = VisibilityPol.get_visibility_pols(self._metafits_context_object, None, None)
 
     def __enter__(self):
         return self

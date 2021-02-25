@@ -94,11 +94,16 @@ if mwalib:
                     ('dec_phase_center_degrees', ct.c_double),
                     ('azimuth_degrees', ct.c_double),
                     ('altitude_degrees', ct.c_double),
+                    ('zenith_angle_degrees', ct.c_double),
+                    ('azimuth_radians', ct.c_double),
+                    ('altitude_radians', ct.c_double),
+                    ('zenith_angle_radians', ct.c_double),
                     ('sun_altitude_degrees', ct.c_double),
                     ('sun_distance_degrees', ct.c_double),
                     ('moon_distance_degrees', ct.c_double),
                     ('jupiter_distance_degrees', ct.c_double),
                     ('lst_degrees', ct.c_double),
+                    ('lst_radians', ct.c_double),
                     ('hour_angle_string', ct.c_char_p),
                     ('grid_name', ct.c_char_p),
                     ('grid_number', ct.c_int32),
@@ -106,21 +111,30 @@ if mwalib:
                     ('project_id', ct.c_char_p),
                     ('observation_name', ct.c_char_p),
                     ('mode', ct.c_char_p),
+                    ('correlator_fine_channel_width_hz', ct.c_uint32),
+                    ('correlator_integration_time_milliseconds', ct.c_uint64),
+                    ('num_fine_channels_per_coarse', ct.c_size_t),
                     ('scheduled_start_utc', ct.c_uint64),
                     ('scheduled_end_utc', ct.c_uint64),
                     ('scheduled_start_mjd', ct.c_double),
                     ('scheduled_end_mjd', ct.c_double),
                     ('scheduled_start_unix_time_milliseconds', ct.c_uint64),
                     ('scheduled_end_unix_time_milliseconds', ct.c_uint64),
+                    ('scheduled_start_gps_time_milliseconds', ct.c_uint64),
+                    ('scheduled_end_gps_time_milliseconds', ct.c_uint64),
                     ('scheduled_duration_milliseconds', ct.c_uint64),
                     ('quack_time_duration_milliseconds', ct.c_uint64),
                     ('good_time_unix_milliseconds', ct.c_uint64),
                     ('num_antennas', ct.c_size_t),
                     ('num_rf_inputs', ct.c_size_t),
                     ('num_antenna_pols', ct.c_size_t),
+                    ('num_baselines', ct.c_size_t),
+                    ('num_visibility_pols', ct.c_size_t),
                     ('num_coarse_channels', ct.c_size_t),
                     ('observation_bandwidth_hz', ct.c_uint32),
                     ('coarse_channel_width_hz', ct.c_uint32),
+                    ('metafits_centre_freq_hz', ct.c_uint32),
+                    ('metafits_filename', ct.c_char_p)
                     ]
 
     #
@@ -198,16 +212,12 @@ if mwalib:
         _fields_ = [('corr_version', ct.c_uint32),
                     ('start_unix_time_milliseconds', ct.c_uint64),
                     ('end_unix_time_milliseconds', ct.c_uint64),
+                    ('start_gps_time_milliseconds', ct.c_uint64),
+                    ('end_gps_time_milliseconds', ct.c_uint64),
                     ('duration_milliseconds', ct.c_uint64),
                     ('num_timesteps', ct.c_size_t),
-                    ('num_baselines', ct.c_size_t),
-                    ('num_visibility_pols', ct.c_size_t),
-                    ('integration_time_milliseconds', ct.c_uint64),
                     ('num_coarse_channels', ct.c_size_t),
                     ('bandwidth_hz', ct.c_uint32),
-                    ('coarse_channel_width_hz', ct.c_uint32),
-                    ('fine_channel_width_hz', ct.c_uint32),
-                    ('num_fine_channels_per_coarse', ct.c_size_t),
                     ('num_timestep_coarse_channel_bytes', ct.c_size_t),
                     ('num_timestep_coarse_channel_floats', ct.c_size_t),
                     ('num_gpubox_files', ct.c_size_t)
@@ -235,8 +245,12 @@ if mwalib:
         _fields_ = [('corr_version', ct.c_uint32),
                     ('start_gps_time_milliseconds', ct.c_uint64),
                     ('end_gps_time_milliseconds', ct.c_uint64),
+                    ('start_unix_time_milliseconds', ct.c_uint64),
+                    ('end_unix_time_milliseconds', ct.c_uint64),
                     ('duration_milliseconds', ct.c_uint64),
                     ('num_timesteps', ct.c_size_t),
+                    ('timestep_duration_milliseconds', ct.c_uint64),
+                    ('num_samples_per_timestep', ct.c_size_t),
                     ('num_coarse_channels', ct.c_size_t),
                     ('bandwidth_hz', ct.c_uint32),
                     ('coarse_channel_width_hz', ct.c_uint32),
@@ -248,7 +262,7 @@ if mwalib:
     # mwalib_voltage_metadata_get()
     #
     mwalib.mwalib_voltage_metadata_get.argtypes = \
-        (ct.POINTER(CCorrelatorContextS),           # correlator context pointer
+        (ct.POINTER(CVoltageContextS),              # voltage context pointer
          ct.POINTER(ct.POINTER(CVoltageMetadataS)), # Pointer to pointer to CVoltageMetadata
          ct.c_char_p,                               # error message
          ct.c_size_t)                               # length of error message
@@ -298,15 +312,17 @@ if mwalib:
 
 
     #
-    # mwalib_correlator_baselines_get()
+    # mwalib_baselines_get()
     #
-    mwalib.mwalib_correlator_baselines_get.argtypes = \
-        (ct.POINTER(CCorrelatorContextS),       # context_ptr
+    mwalib.mwalib_baselines_get.argtypes = \
+        (ct.POINTER(CMetafitsContextS),         # metafits context pointer OR
+         ct.POINTER(CCorrelatorContextS),       # correlator context pointer OR
+         ct.POINTER(CVoltageContextS),          # voltage context pointer
          ct.POINTER(ct.POINTER(CBaselineS)),    # out pointer to array of baselines
          ct.POINTER(ct.c_size_t),               # out number of baselines in out array
          ct.c_char_p,                           # error message
          ct.c_size_t)                           # length of error message
-    mwalib.mwalib_correlator_baselines_get.restype = ct.c_int32
+    mwalib.mwalib_baselines_get.restype = ct.c_int32
 
     #
     # mwalib_correlator_baselines_free()
@@ -326,7 +342,6 @@ if mwalib:
                     ('channel_start_hz', ct.c_uint32),
                     ('channel_centre_hz', ct.c_uint32),
                     ('channel_end_hz', ct.c_uint32), ]
-
 
     #
     # mwalib_correlator_coarse_channels_get()
@@ -440,15 +455,17 @@ if mwalib:
         _fields_ = [('polarisation', ct.c_char_p), ]
 
     #
-    # mwalib_correlator_visibility_pols_get()
+    # mwalib_visibility_pols_get()
     #
-    mwalib.mwalib_correlator_visibility_pols_get.argtypes = \
-        (ct.POINTER(CCorrelatorContextS),           # correlator context pointer
+    mwalib.mwalib_visibility_pols_get.argtypes = \
+        (ct.POINTER(CMetafitsContextS),             # metafits context pointer OR
+         ct.POINTER(CCorrelatorContextS),           # correlator context pointer OR
+         ct.POINTER(CVoltageContextS),              # voltage context pointer
          ct.POINTER(ct.POINTER(CVisibilityPolS)),   # out pointer to array of timesteps
          ct.POINTER(ct.c_size_t),                   # out number of timesteps in out array
          ct.c_char_p,                               # error message
          ct.c_size_t)                               # length of error message
-    mwalib.mwalib_correlator_visibility_pols_get.restype = ct.c_int32
+    mwalib.mwalib_visibility_pols_get.restype = ct.c_int32
 
     #
     # mwalibVisibilityPol.free()

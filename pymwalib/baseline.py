@@ -12,7 +12,7 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
-from pymwalib.mwalib import create_string_buffer, mwalib, CBaselineS, CCorrelatorContextS
+from pymwalib.mwalib import create_string_buffer, mwalib, CBaselineS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
 from pymwalib.common import ERROR_MESSAGE_LEN
 from pymwalib.errors import *
 import ctypes as ct
@@ -20,7 +20,7 @@ import ctypes as ct
 
 class Baseline:
     """
-    A class representing a single mwalibBaseline
+    A class representing a single Baseline
 
     Attributes
     ----------
@@ -51,7 +51,9 @@ class Baseline:
                f"Antennas: {self.antenna1_index} v {self.antenna2_index})"
 
     @staticmethod
-    def get_baselines(correlator_context: ct.POINTER(CCorrelatorContextS)) -> []:
+    def get_baselines(metafits_context: ct.POINTER(CMetafitsContextS),
+                      correlator_context: ct.POINTER(CCorrelatorContextS),
+                      voltage_context: ct.POINTER(CVoltageContextS)) -> []:
         """Retrieve all of the baseline metadata and populate a list of baselines."""
         baselines = []
         error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
@@ -59,11 +61,13 @@ class Baseline:
         c_array_ptr = ct.POINTER(CBaselineS)()
         c_len_ptr = ct.c_size_t(0)
 
-        if mwalib.mwalib_correlator_baselines_get(correlator_context,
-                                                  ct.byref(c_array_ptr),
-                                                  ct.byref(c_len_ptr),
-                                                  error_message,
-                                                  ERROR_MESSAGE_LEN) != 0:
+        if mwalib.mwalib_baselines_get(metafits_context,
+                                       correlator_context,
+                                       voltage_context,
+                                       ct.byref(c_array_ptr),
+                                       ct.byref(c_len_ptr),
+                                       error_message,
+                                       ERROR_MESSAGE_LEN) != 0:
             # Error
             raise ContextCorrelatorBaselinesGetError(f"Error getting baseline object: "
                                                      f"{error_message.decode('utf-8').rstrip()}")

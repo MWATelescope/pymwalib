@@ -12,8 +12,6 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
-import enum
-import numpy.ctypeslib as npct
 from datetime import datetime
 from pymwalib.mwalib import *
 from pymwalib.common import CorrelatorVersion, ERROR_MESSAGE_LEN
@@ -66,6 +64,11 @@ class MetafitsMetadata:
             self.project_id: str = c_object.project_id.decode("utf-8")
             self.observation_name: str = c_object.observation_name.decode("utf-8")
             self.mode: str = c_object.mode.decode("utf-8")
+            self.num_baselines: int = c_object.num_baselines
+            self.num_visibility_pols: int = c_object.num_visibility_pols
+            self.correlator_fine_channel_width_hz: int = c_object.correlator_fine_channel_width_hz
+            self.correlator_integration_time_milliseconds: int = c_object.correlator_integration_time_milliseconds
+            self.num_fine_channels_per_coarse: int = c_object.num_fine_channels_per_coarse
             self.scheduled_start_utc: datetime = datetime.utcfromtimestamp(c_object.scheduled_start_utc)
             self.scheduled_end_utc: datetime = datetime.utcfromtimestamp(c_object.scheduled_end_utc)
             self.scheduled_start_mjd: float = c_object.scheduled_start_mjd
@@ -112,6 +115,9 @@ class MetafitsMetadata:
                f"Project ID                            : {self.project_id}\n" \
                f"Observation Name                      : {self.observation_name}\n" \
                f"Mode                                  : {self.mode}\n" \
+               f"Correlator fine channel width (Hz)    : {self.correlator_fine_channel_width_hz}\n" \
+               f"Correlator int. time (ms)             : {self.correlator_integration_time_milliseconds}\n" \
+               f"Correlator fine channels per coarse   : {self.num_fine_channels_per_coarse}\n" \
                f"Scheduled Start (UTC)                 : {self.scheduled_start_utc}\n" \
                f"Scheduled End (UTC)                   : {self.scheduled_end_utc}\n" \
                f"Scheduled Start (UNIX)                : {float(self.scheduled_start_unix_time_milliseconds) / 1000.} UNIX\n" \
@@ -121,9 +127,11 @@ class MetafitsMetadata:
                f"Scheduled Duration                    : {float(self.scheduled_duration_milliseconds) / 1000.} s\n" \
                f"Quack time (ms)                       : {float(self.quack_time_duration_milliseconds) / 1000.} s\n" \
                f"Good start time                       : {float(self.good_time_unix_milliseconds) / 1000.} UNIX\n" \
-               f"(actual) num antennas                 : {self.num_antennas}\n" \
-               f"(actual) num rf_inputs                : {self.num_rf_inputs}\n" \
-               f"(actual) num antenna pols             : {self.num_antenna_pols}\n" \
+               f"num antennas                          : {self.num_antennas}\n" \
+               f"num rf_inputs                         : {self.num_rf_inputs}\n" \
+               f"Baselines                             : {self.num_baselines}\n" \
+               f"Visibility pols                       : {self.num_visibility_pols}\n" \
+               f"num antenna pols                      : {self.num_antenna_pols}\n" \
                f"(actual) num coarse channels          : {self.num_coarse_channels}\n" \
                f"(Data) Observation bandwidth          : {float(self.observation_bandwidth_hz) / 1000000.} MHz\n" \
                f"Coarse channel width                  : {float(self.coarse_channel_width_hz) / 1000000.} MHz\n)\n"

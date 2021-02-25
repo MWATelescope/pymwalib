@@ -20,7 +20,7 @@ import ctypes as ct
 
 class RFInput:
     """
-    A class representing a single mwalibRFInput
+    A class representing a single RFInput
 
     Attributes
     ----------

@@ -12,11 +12,8 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
-import enum
-import numpy.ctypeslib as npct
-from datetime import datetime
 from pymwalib.mwalib import *
-from pymwalib.common import CorrelatorVersion, ERROR_MESSAGE_LEN
+from pymwalib.common import ERROR_MESSAGE_LEN,CorrelatorVersion
 from pymwalib.errors import *
 
 
@@ -44,14 +41,8 @@ class CorrelatorMetadata:
             self.end_unix_time_milliseconds: int = c_object.end_unix_time_milliseconds
             self.duration_milliseconds: int = c_object.duration_milliseconds
             self.num_timesteps: int = c_object.num_timesteps
-            self.num_baselines: int = c_object.num_baselines
-            self.num_visibility_pols: int = c_object.num_visibility_pols
-            self.integration_time_milliseconds: int = c_object.integration_time_milliseconds
             self.num_coarse_channels: int = c_object.num_coarse_channels
             self.bandwidth_hz: int = c_object.bandwidth_hz
-            self.coarse_channel_width_hz: int = c_object.coarse_channel_width_hz
-            self.fine_channel_width_hz: int = c_object.fine_channel_width_hz
-            self.num_fine_channels_per_coarse: int = c_object.num_fine_channels_per_coarse
             self.num_timestep_coarse_channel_bytes: int = c_object.num_timestep_coarse_channel_bytes
             self.num_timestep_coarse_channel_floats: int = c_object.num_timestep_coarse_channel_floats
             self.num_gpubox_files: int = c_object.num_gpubox_files
@@ -67,14 +58,8 @@ class CorrelatorMetadata:
                f"(actual) End time                     : {float(self.end_unix_time_milliseconds) / 1000.} UNIX\n" \
                f"(actual) Duration                     : {float(self.duration_milliseconds) / 1000.} s\n" \
                f"(actual) num timesteps                : {self.num_timesteps}\n" \
-               f"(actual) num baselines                : {self.num_baselines}\n" \
-               f"(actual) num visibility pols          : {self.num_visibility_pols}\n" \
                f"(actual) num coarse channels          : {self.num_coarse_channels}\n" \
-               f"Correlator fine channel width         : {float(self.fine_channel_width_hz) / 1000.} kHz\n" \
-               f"Correlator Integration time           : {float(self.integration_time_milliseconds) / 1000.} s\n" \
                f"(Data) Observation bandwidth          : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
-               f"Coarse channel width                  : {float(self.coarse_channel_width_hz) / 1000000.} MHz\n" \
-               f"Num fine channels per coarse          : {self.num_fine_channels_per_coarse}\n" \
                f"Num bytes per timestep coarse channel : " \
                f"{float(self.num_timestep_coarse_channel_bytes) / (1024. * 1024.)} MB\n" \
                f"Num floats per timestep coarse channel: " \

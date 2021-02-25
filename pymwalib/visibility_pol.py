@@ -12,7 +12,7 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
-from pymwalib.mwalib import create_string_buffer, mwalib, CVisibilityPolS, CCorrelatorContextS
+from pymwalib.mwalib import create_string_buffer, mwalib, CVisibilityPolS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
 from pymwalib.common import ERROR_MESSAGE_LEN
 from pymwalib.errors import *
 import ctypes as ct
@@ -46,7 +46,9 @@ class VisibilityPol:
                f"UNIX time: {self.polarisation})"
 
     @staticmethod
-    def get_visibility_pols(correlator_context: ct.POINTER(CCorrelatorContextS)) -> []:
+    def get_visibility_pols(metafits_context: ct.POINTER(CMetafitsContextS),
+                            correlator_context: ct.POINTER(CCorrelatorContextS),
+                            voltage_context: ct.POINTER(CVoltageContextS)) -> []:
         """Retrieve all of the visibility_pol metadata and populate a list of visibility_pols."""
         visibility_pols = []
         error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
@@ -54,11 +56,13 @@ class VisibilityPol:
         c_array_ptr = ct.POINTER(CVisibilityPolS)()
         c_len_ptr = ct.c_size_t(0)
 
-        if mwalib.mwalib_correlator_visibility_pols_get(correlator_context,
-                                                        ct.byref(c_array_ptr),
-                                                        ct.byref(c_len_ptr),
-                                                        error_message,
-                                                        ERROR_MESSAGE_LEN) != 0:
+        if mwalib.mwalib_visibility_pols_get(metafits_context,
+                                             correlator_context,
+                                             voltage_context,
+                                             ct.byref(c_array_ptr),
+                                             ct.byref(c_len_ptr),
+                                             error_message,
+                                             ERROR_MESSAGE_LEN) != 0:
             # Error
             raise ContextCorrelatorVisibilityPolsGetError(f"Error getting visibility_pol object: "
                                                           f"{error_message.decode('utf-8').rstrip()}")

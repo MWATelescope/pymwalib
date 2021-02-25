@@ -20,7 +20,7 @@ import ctypes as ct
 
 class TimeStep:
     """
-    A class representing a single mwalibTimeStep
+    A class representing a single TimeStep
 
     Attributes
     ----------
