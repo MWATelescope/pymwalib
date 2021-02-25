@@ -37,14 +37,14 @@ class CorrelatorMetadata:
 
             # Populate all the fields
             self.corr_version: CorrelatorVersion = c_object.corr_version
-            self.start_unix_time_milliseconds: int = c_object.start_unix_time_milliseconds
-            self.end_unix_time_milliseconds: int = c_object.end_unix_time_milliseconds
-            self.duration_milliseconds: int = c_object.duration_milliseconds
+            self.start_unix_time_ms: int = c_object.start_unix_time_ms
+            self.end_unix_time_ms: int = c_object.end_unix_time_ms
+            self.duration_ms: int = c_object.duration_ms
             self.num_timesteps: int = c_object.num_timesteps
-            self.num_coarse_channels: int = c_object.num_coarse_channels
+            self.num_coarse_chans: int = c_object.num_coarse_chans
             self.bandwidth_hz: int = c_object.bandwidth_hz
-            self.num_timestep_coarse_channel_bytes: int = c_object.num_timestep_coarse_channel_bytes
-            self.num_timestep_coarse_channel_floats: int = c_object.num_timestep_coarse_channel_floats
+            self.num_timestep_coarse_chan_bytes: int = c_object.num_timestep_coarse_chan_bytes
+            self.num_timestep_coarse_chan_floats: int = c_object.num_timestep_coarse_chan_floats
             self.num_gpubox_files: int = c_object.num_gpubox_files
 
             # We're now finished with the C memory, so free it
@@ -54,14 +54,14 @@ class CorrelatorMetadata:
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
                f"Correlator Version                    : {CorrelatorVersion(self.corr_version).name}\n" \
-               f"(actual) Start time                   : {float(self.start_unix_time_milliseconds) / 1000.} UNIX\n" \
-               f"(actual) End time                     : {float(self.end_unix_time_milliseconds) / 1000.} UNIX\n" \
-               f"(actual) Duration                     : {float(self.duration_milliseconds) / 1000.} s\n" \
+               f"(actual) Start time                   : {float(self.start_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) End time                     : {float(self.end_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) Duration                     : {float(self.duration_ms) / 1000.} s\n" \
                f"(actual) num timesteps                : {self.num_timesteps}\n" \
-               f"(actual) num coarse channels          : {self.num_coarse_channels}\n" \
+               f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
                f"(Data) Observation bandwidth          : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
                f"Num bytes per timestep coarse channel : " \
-               f"{float(self.num_timestep_coarse_channel_bytes) / (1024. * 1024.)} MB\n" \
+               f"{float(self.num_timestep_coarse_chan_bytes) / (1024. * 1024.)} MB\n" \
                f"Num floats per timestep coarse channel: " \
-               f"{self.num_timestep_coarse_channel_floats}\n" \
+               f"{self.num_timestep_coarse_chan_floats}\n" \
                f"(actual) num GPUBox files             : {self.num_gpubox_files}\n)\n"

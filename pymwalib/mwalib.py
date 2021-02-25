@@ -82,57 +82,57 @@ if mwalib:
     # C MetafitsMetadata struct
     #
     class CMetafitsMetadataS(ct.Structure):
-        _fields_ = [('obsid', ct.c_uint32),
-                    ('mwa_latitude_radians', ct.c_double),
-                    ('mwa_longitude_radians', ct.c_double),
-                    ('mwa_altitude_metres', ct.c_double),
+        _fields_ = [('obs_id', ct.c_uint32),
+                    ('mwa_lat_rad', ct.c_double),
+                    ('mwa_long_rad', ct.c_double),
+                    ('mwa_alt_metres', ct.c_double),
                     ('coax_v_factor', ct.c_double),
                     ('global_analogue_attenuation_db', ct.c_double),
-                    ('ra_tile_pointing_degrees', ct.c_double),
-                    ('dec_tile_pointing_degrees', ct.c_double),
-                    ('ra_phase_center_degrees', ct.c_double),
-                    ('dec_phase_center_degrees', ct.c_double),
-                    ('azimuth_degrees', ct.c_double),
-                    ('altitude_degrees', ct.c_double),
-                    ('zenith_angle_degrees', ct.c_double),
-                    ('azimuth_radians', ct.c_double),
-                    ('altitude_radians', ct.c_double),
-                    ('zenith_angle_radians', ct.c_double),
-                    ('sun_altitude_degrees', ct.c_double),
-                    ('sun_distance_degrees', ct.c_double),
-                    ('moon_distance_degrees', ct.c_double),
-                    ('jupiter_distance_degrees', ct.c_double),
-                    ('lst_degrees', ct.c_double),
-                    ('lst_radians', ct.c_double),
+                    ('ra_tile_pointing_deg', ct.c_double),
+                    ('dec_tile_pointing_deg', ct.c_double),
+                    ('ra_phase_center_deg', ct.c_double),
+                    ('dec_phase_center_deg', ct.c_double),
+                    ('az_deg', ct.c_double),
+                    ('alt_deg', ct.c_double),
+                    ('zenith_angle_deg', ct.c_double),
+                    ('az_rad', ct.c_double),
+                    ('alt_rad', ct.c_double),
+                    ('zenith_angle_rad', ct.c_double),
+                    ('sun_alt_deg', ct.c_double),
+                    ('sun_distance_deg', ct.c_double),
+                    ('moon_distance_deg', ct.c_double),
+                    ('jupiter_distance_deg', ct.c_double),
+                    ('lst_deg', ct.c_double),
+                    ('lst_rad', ct.c_double),
                     ('hour_angle_string', ct.c_char_p),
                     ('grid_name', ct.c_char_p),
                     ('grid_number', ct.c_int32),
                     ('creator', ct.c_char_p),
                     ('project_id', ct.c_char_p),
-                    ('observation_name', ct.c_char_p),
+                    ('obs_name', ct.c_char_p),
                     ('mode', ct.c_char_p),
-                    ('correlator_fine_channel_width_hz', ct.c_uint32),
-                    ('correlator_integration_time_milliseconds', ct.c_uint64),
-                    ('num_fine_channels_per_coarse', ct.c_size_t),
-                    ('scheduled_start_utc', ct.c_uint64),
-                    ('scheduled_end_utc', ct.c_uint64),
-                    ('scheduled_start_mjd', ct.c_double),
-                    ('scheduled_end_mjd', ct.c_double),
-                    ('scheduled_start_unix_time_milliseconds', ct.c_uint64),
-                    ('scheduled_end_unix_time_milliseconds', ct.c_uint64),
-                    ('scheduled_start_gps_time_milliseconds', ct.c_uint64),
-                    ('scheduled_end_gps_time_milliseconds', ct.c_uint64),
-                    ('scheduled_duration_milliseconds', ct.c_uint64),
-                    ('quack_time_duration_milliseconds', ct.c_uint64),
-                    ('good_time_unix_milliseconds', ct.c_uint64),
-                    ('num_antennas', ct.c_size_t),
+                    ('corr_fine_chan_width_hz', ct.c_uint32),
+                    ('corr_int_time_ms', ct.c_uint64),
+                    ('num_corr_fine_chans_per_coarse', ct.c_size_t),
+                    ('sched_start_utc', ct.c_uint64),
+                    ('sched_end_utc', ct.c_uint64),
+                    ('sched_start_mjd', ct.c_double),
+                    ('sched_end_mjd', ct.c_double),
+                    ('sched_start_unix_time_ms', ct.c_uint64),
+                    ('sched_end_unix_time_ms', ct.c_uint64),
+                    ('sched_start_gps_time_ms', ct.c_uint64),
+                    ('sched_end_gps_time_ms', ct.c_uint64),
+                    ('sched_duration_ms', ct.c_uint64),
+                    ('quack_time_duration_ms', ct.c_uint64),
+                    ('good_time_unix_ms', ct.c_uint64),
+                    ('num_ants', ct.c_size_t),
                     ('num_rf_inputs', ct.c_size_t),
-                    ('num_antenna_pols', ct.c_size_t),
+                    ('num_ant_pols', ct.c_size_t),
                     ('num_baselines', ct.c_size_t),
                     ('num_visibility_pols', ct.c_size_t),
-                    ('num_coarse_channels', ct.c_size_t),
-                    ('observation_bandwidth_hz', ct.c_uint32),
-                    ('coarse_channel_width_hz', ct.c_uint32),
+                    ('num_coarse_chans', ct.c_size_t),
+                    ('obs_bandwidth_hz', ct.c_uint32),
+                    ('coarse_chan_width_hz', ct.c_uint32),
                     ('metafits_centre_freq_hz', ct.c_uint32),
                     ('metafits_filename', ct.c_char_p)
                     ]
@@ -185,7 +185,7 @@ if mwalib:
     mwalib.mwalib_correlator_context_read_by_baseline.argtypes = \
         (ct.POINTER(CCorrelatorContextS),   # context
          ct.c_size_t,                       # input timestep_index
-         ct.c_size_t,                       # input coarse_channel_index
+         ct.c_size_t,                       # input coarse_chan_index
          ct.POINTER(ct.c_float),            # buffer_ptr
          ct.c_size_t,                       # buffer_len
          ct.c_char_p,                       # error message
@@ -198,7 +198,7 @@ if mwalib:
     mwalib.mwalib_correlator_context_read_by_frequency.argtypes = \
         (ct.POINTER(CCorrelatorContextS),   # context
          ct.c_size_t,                       # input timestep_index
-         ct.c_size_t,                       # input coarse_channel_index
+         ct.c_size_t,                       # input coarse_chan_index
          ct.POINTER(ct.c_float),            # buffer_ptr
          ct.c_size_t,                       # buffer_len
          ct.c_char_p,                       # error message
@@ -210,16 +210,16 @@ if mwalib:
     #
     class CCorrelatorMetadataS(ct.Structure):
         _fields_ = [('corr_version', ct.c_uint32),
-                    ('start_unix_time_milliseconds', ct.c_uint64),
-                    ('end_unix_time_milliseconds', ct.c_uint64),
-                    ('start_gps_time_milliseconds', ct.c_uint64),
-                    ('end_gps_time_milliseconds', ct.c_uint64),
-                    ('duration_milliseconds', ct.c_uint64),
+                    ('start_unix_time_ms', ct.c_uint64),
+                    ('end_unix_time_ms', ct.c_uint64),
+                    ('start_gps_time_ms', ct.c_uint64),
+                    ('end_gps_time_ms', ct.c_uint64),
+                    ('duration_ms', ct.c_uint64),
                     ('num_timesteps', ct.c_size_t),
-                    ('num_coarse_channels', ct.c_size_t),
+                    ('num_coarse_chans', ct.c_size_t),
                     ('bandwidth_hz', ct.c_uint32),
-                    ('num_timestep_coarse_channel_bytes', ct.c_size_t),
-                    ('num_timestep_coarse_channel_floats', ct.c_size_t),
+                    ('num_timestep_coarse_chan_bytes', ct.c_size_t),
+                    ('num_timestep_coarse_chan_floats', ct.c_size_t),
                     ('num_gpubox_files', ct.c_size_t)
                     ]
     #
@@ -243,19 +243,19 @@ if mwalib:
     #
     class CVoltageMetadataS(ct.Structure):
         _fields_ = [('corr_version', ct.c_uint32),
-                    ('start_gps_time_milliseconds', ct.c_uint64),
-                    ('end_gps_time_milliseconds', ct.c_uint64),
-                    ('start_unix_time_milliseconds', ct.c_uint64),
-                    ('end_unix_time_milliseconds', ct.c_uint64),
-                    ('duration_milliseconds', ct.c_uint64),
+                    ('start_gps_time_ms', ct.c_uint64),
+                    ('end_gps_time_ms', ct.c_uint64),
+                    ('start_unix_time_ms', ct.c_uint64),
+                    ('end_unix_time_ms', ct.c_uint64),
+                    ('duration_ms', ct.c_uint64),
                     ('num_timesteps', ct.c_size_t),
-                    ('timestep_duration_milliseconds', ct.c_uint64),
+                    ('timestep_duration_ms', ct.c_uint64),
                     ('num_samples_per_timestep', ct.c_size_t),
-                    ('num_coarse_channels', ct.c_size_t),
+                    ('num_coarse_chans', ct.c_size_t),
                     ('bandwidth_hz', ct.c_uint32),
-                    ('coarse_channel_width_hz', ct.c_uint32),
-                    ('fine_channel_width_hz', ct.c_uint32),
-                    ('num_fine_channels_per_coarse', ct.c_size_t),
+                    ('coarse_chan_width_hz', ct.c_uint32),
+                    ('fine_chan_width_hz', ct.c_uint32),
+                    ('num_fine_chans_per_coarse', ct.c_size_t),
                     ]
 
     #
@@ -278,7 +278,7 @@ if mwalib:
     # C Antenna struct
     #
     class CAntennaS(ct.Structure):
-        _fields_ = [('antenna', ct.c_uint32),
+        _fields_ = [('ant', ct.c_uint32),
                     ('tile_id', ct.c_uint32),
                     ('tile_name', ct.c_char_p), ]
 
@@ -307,8 +307,8 @@ if mwalib:
     # C Baseline struct
     #
     class CBaselineS(ct.Structure):
-        _fields_ = [('antenna1_index', ct.c_size_t),
-                    ('antenna2_index', ct.c_size_t), ]
+        _fields_ = [('ant1_index', ct.c_size_t),
+                    ('ant2_index', ct.c_size_t), ]
 
 
     #
@@ -335,13 +335,13 @@ if mwalib:
     # C CoarseChannel struct
     #
     class CCoarseChannelS(ct.Structure):
-        _fields_ = [('correlator_channel_number', ct.c_size_t),
-                    ('receiver_channel_number', ct.c_size_t),
+        _fields_ = [('corr_chan_number', ct.c_size_t),
+                    ('rec_chan_number', ct.c_size_t),
                     ('gpubox_number', ct.c_size_t),
-                    ('channel_width_hz', ct.c_uint32),
-                    ('channel_start_hz', ct.c_uint32),
-                    ('channel_centre_hz', ct.c_uint32),
-                    ('channel_end_hz', ct.c_uint32), ]
+                    ('chan_width_hz', ct.c_uint32),
+                    ('chan_start_hz', ct.c_uint32),
+                    ('chan_centre_hz', ct.c_uint32),
+                    ('chan_end_hz', ct.c_uint32), ]
 
     #
     # mwalib_correlator_coarse_channels_get()
@@ -377,7 +377,7 @@ if mwalib:
     #
     class CRFInputS(ct.Structure):
         _fields_ = [('input', ct.c_uint32),
-                    ('antenna', ct.c_uint32),
+                    ('ant', ct.c_uint32),
                     ('tile_id', ct.c_uint32),
                     ('tile_name', ct.c_char_p),
                     ('pol', ct.c_char_p),
@@ -388,8 +388,8 @@ if mwalib:
                     ('vcs_order', ct.c_uint32),
                     ('subfile_order', ct.c_uint32),
                     ('flagged', ct.c_bool),
-                    ('receiver_number', ct.c_uint32),
-                    ('receiver_slot_number', ct.c_uint32)]
+                    ('rec_number', ct.c_uint32),
+                    ('rec_slot_number', ct.c_uint32)]
 
     #
     # mwalib_rfinputs_get()
@@ -416,8 +416,8 @@ if mwalib:
     # C TimeStep struct
     #
     class CTimeStepS(ct.Structure):
-        _fields_ = [('unix_time_milliseconds', ct.c_uint64),
-                    ('gps_time_milliseconds', ct.c_uint64),]
+        _fields_ = [('unix_time_ms', ct.c_uint64),
+                    ('gps_time_ms', ct.c_uint64),]
 
     #
     # mwalib_correlator_timesteps_get()

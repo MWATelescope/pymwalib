@@ -69,16 +69,16 @@ if __name__ == "__main__":
 
         # Sum the data by baseline
         print(f"\n\n\nSumming {context.correlator_metadata.num_timesteps} timesteps "
-              f"and {context.correlator_metadata.num_coarse_channels} coarse channels...")
+              f"and {context.correlator_metadata.num_coarse_chans} coarse channels...")
 
         total_sum = 0
         for timestep_index in range(0, context.correlator_metadata.num_timesteps):
              this_sum = 0
 
-             for coarse_channel_index in range(0, context.correlator_metadata.num_coarse_channels):
+             for coarse_chan_index in range(0, context.correlator_metadata.num_coarse_chans):
                  try:
                      data = context.read_by_baseline(timestep_index,
-                                                     coarse_channel_index)
+                                                     coarse_chan_index)
                  except Exception as e:
                      print(f"Error: {e}")
                      exit(-1)
@@ -93,10 +93,10 @@ if __name__ == "__main__":
         for timestep_index in range(0, context.correlator_metadata.num_timesteps):
              this_sum = 0
 
-             for coarse_channel_index in range(0, context.correlator_metadata.num_coarse_channels):
+             for coarse_chan_index in range(0, context.correlator_metadata.num_coarse_chans):
                  try:
                      data = context.read_by_frequency(timestep_index,
-                                                      coarse_channel_index)
+                                                      coarse_chan_index)
                  except Exception as e:
                      print(f"Error: {e}")
                      exit(-1)

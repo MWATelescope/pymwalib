@@ -33,34 +33,34 @@ class CoarseChannel:
 
     def __init__(self,
                  index: int,
-                 correlator_channel_number: int,
-                 receiver_channel_number: int,
+                 corr_chan_number: int,
+                 rec_chan_number: int,
                  gpubox_number: int,
-                 channel_width_hz: int,
-                 channel_start_hz: int,
-                 channel_centre_hz: int,
-                 channel_end_hz: int):
+                 chan_width_hz: int,
+                 chan_start_hz: int,
+                 chan_centre_hz: int,
+                 chan_end_hz: int):
         """Initialise the class"""
         self.index: int = index
-        self.correlator_channel_number: int = correlator_channel_number
-        self.receiver_channel_number: int = receiver_channel_number
+        self.corr_chan_number: int = corr_chan_number
+        self.rec_chan_number: int = rec_chan_number
         self.gpubox_number: int = gpubox_number
-        self.channel_width_hz: int = channel_width_hz
-        self.channel_start_hz: int = channel_start_hz
-        self.channel_centre_hz: int = channel_centre_hz
-        self.channel_end_hz: int = channel_end_hz
+        self.chan_width_hz: int = chan_width_hz
+        self.chan_start_hz: int = chan_start_hz
+        self.chan_centre_hz: int = chan_centre_hz
+        self.chan_end_hz: int = chan_end_hz
 
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(" \
                f"Order: {self.index}, " \
-               f"Correlator channel number: {self.correlator_channel_number}, " \
-               f"Receiver channel number: {self.receiver_channel_number}, " \
+               f"Correlator channel number: {self.corr_chan_number}, " \
+               f"Receiver channel number: {self.rec_chan_number}, " \
                f"GPUBox Number: {self.gpubox_number}, " \
-               f"Channel width MHz: {float(self.channel_width_hz) / 1000000.}, " \
-               f"Channel start MHz: {float(self.channel_start_hz) / 1000000.}, " \
-               f"Channel centre MHz: {float(self.channel_centre_hz) / 1000000.}, " \
-               f"Channel end MHz: {float(self.channel_end_hz) / 1000000.})"
+               f"Channel width MHz: {float(self.chan_width_hz) / 1000000.}, " \
+               f"Channel start MHz: {float(self.chan_start_hz) / 1000000.}, " \
+               f"Channel centre MHz: {float(self.chan_centre_hz) / 1000000.}, " \
+               f"Channel end MHz: {float(self.chan_end_hz) / 1000000.})"
 
     @staticmethod
     def get_coarse_channels(correlator_context: ct.POINTER(CCorrelatorContextS),
@@ -97,13 +97,13 @@ class CoarseChannel:
         for i in range(0, c_len_ptr.value):
             # Populate all the fields
             coarse_channels.append(CoarseChannel(i,
-                                                 c_array_ptr[i].correlator_channel_number,
-                                                 c_array_ptr[i].receiver_channel_number,
+                                                 c_array_ptr[i].corr_chan_number,
+                                                 c_array_ptr[i].rec_chan_number,
                                                  c_array_ptr[i].gpubox_number,
-                                                 c_array_ptr[i].channel_width_hz,
-                                                 c_array_ptr[i].channel_start_hz,
-                                                 c_array_ptr[i].channel_centre_hz,
-                                                 c_array_ptr[i].channel_end_hz,))
+                                                 c_array_ptr[i].chan_width_hz,
+                                                 c_array_ptr[i].chan_start_hz,
+                                                 c_array_ptr[i].chan_centre_hz,
+                                                 c_array_ptr[i].chan_end_hz,))
 
         # We're now finished with the C memory, so free it
         mwalib.mwalib_coarse_channels_free(c_array_ptr, c_len_ptr.value)

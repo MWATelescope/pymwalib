@@ -27,29 +27,29 @@ class TimeStep:
     index : int
         Ordinal index of this time step.
 
-    unix_time_milliseconds : int
+    unix_time_ms : int
         The UNIX time (in milliseconds) of the start of this time step
 
-    gps_time_milliseconds : int
+    gps_time_ms : int
         The GPS time (in milliseconds) of the start of this time step
 
     """
 
     def __init__(self,
                  index: int,
-                 unix_time_milliseconds: int,
-                 gps_time_milliseconds: int):
+                 unix_time_ms: int,
+                 gps_time_ms: int):
         """Initialise the class"""
         self.index: int = index
-        self.unix_time_milliseconds: int = unix_time_milliseconds
-        self.gps_time_milliseconds: int = gps_time_milliseconds
+        self.unix_time_ms: int = unix_time_ms
+        self.gps_time_ms: int = gps_time_ms
 
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(" \
                f"Order: {self.index}, " \
-               f"UNIX time: {float(self.unix_time_milliseconds) / 1000.}, " \
-               f"GPS time: {float(self.gps_time_milliseconds) / 1000.})"
+               f"UNIX time: {float(self.unix_time_ms) / 1000.}, " \
+               f"GPS time: {float(self.gps_time_ms) / 1000.})"
 
     @staticmethod
     def get_timesteps(correlator_context: ct.POINTER(CCorrelatorContextS),
@@ -86,8 +86,8 @@ class TimeStep:
         for i in range(0, c_len_ptr.value):
             # Populate all the fields
             timesteps.append(TimeStep(i,
-                                      c_array_ptr[i].unix_time_milliseconds,
-                                      c_array_ptr[i].gps_time_milliseconds))
+                                      c_array_ptr[i].unix_time_ms,
+                                      c_array_ptr[i].gps_time_ms))
 
         # We're now finished with the C memory, so free it
         mwalib.mwalib_timesteps_free(c_array_ptr, c_len_ptr.value)

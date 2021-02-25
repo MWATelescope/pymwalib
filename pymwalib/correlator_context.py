@@ -99,38 +99,38 @@ class CorrelatorContext:
              raise ContextCorrelatorContextDisplayError(f"Error calling mwalib_correlator_context_display(): "
                                                         f"{error_message.decode('utf-8').rstrip()}")
 
-    def read_by_baseline(self, timestep_index, coarse_channel_index):
+    def read_by_baseline(self, timestep_index, coarse_chan_index):
          """Retrieve one HDU (ordered baseline,freq,pol,r,i) as a numpy array."""
          error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
-         float_buffer_type = ct.c_float * self.correlator_metadata.num_timestep_coarse_channel_floats
+         float_buffer_type = ct.c_float * self.correlator_metadata.num_timestep_coarse_chan_floats
          buffer = float_buffer_type()
 
          if mwalib.mwalib_correlator_context_read_by_baseline(self._correlator_context_object,
                                                               ct.c_size_t(timestep_index),
-                                                              ct.c_size_t(coarse_channel_index),
+                                                              ct.c_size_t(coarse_chan_index),
                                                               buffer,
-                                                              self.correlator_metadata.num_timestep_coarse_channel_floats,
+                                                              self.correlator_metadata.num_timestep_coarse_chan_floats,
                                                               error_message, ERROR_MESSAGE_LEN) != 0:
              raise ContextCorrelatorContextReadByBaselineException(f"Error reading data: "
                                                   f"{error_message.decode('utf-8').rstrip()}")
          else:
-             return npct.as_array(buffer, shape=(self.correlator_metadata.num_timestep_coarse_channel_floats,))
+             return npct.as_array(buffer, shape=(self.correlator_metadata.num_timestep_coarse_chan_floats,))
 
-    def read_by_frequency(self, timestep_index, coarse_channel_index):
+    def read_by_frequency(self, timestep_index, coarse_chan_index):
         """Retrieve one HDU (ordered freq,baseline,pol,r,i) as a numpy array."""
         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
-        float_buffer_type = ct.c_float * self.correlator_metadata.num_timestep_coarse_channel_floats
+        float_buffer_type = ct.c_float * self.correlator_metadata.num_timestep_coarse_chan_floats
         buffer = float_buffer_type()
 
         if mwalib.mwalib_correlator_context_read_by_frequency(self._correlator_context_object,
                                                               ct.c_size_t(timestep_index),
-                                                              ct.c_size_t(coarse_channel_index),
+                                                              ct.c_size_t(coarse_chan_index),
                                                               buffer,
-                                                              self.correlator_metadata.num_timestep_coarse_channel_floats,
+                                                              self.correlator_metadata.num_timestep_coarse_chan_floats,
                                                               error_message, ERROR_MESSAGE_LEN) != 0:
             raise ContextCorrelatorContextReadByFrequencyException(f"Error reading data: "
                                                                    f"{error_message.decode('utf-8').rstrip()}")
         else:
-            return npct.as_array(buffer, shape=(self.correlator_metadata.num_timestep_coarse_channel_floats,))
+            return npct.as_array(buffer, shape=(self.correlator_metadata.num_timestep_coarse_chan_floats,))

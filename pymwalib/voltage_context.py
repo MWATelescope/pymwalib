@@ -42,7 +42,7 @@ class VoltageContext:
         self.rfinputs = RFInput.get_rfinputs(None, None, self._voltage_context_object)
 
         # Populate antennas
-        self.antennas = Antenna.get_antennas(None, None, self._voltage_context_object, self.rfinputs)
+        self.ants = Antenna.get_antennas(None, None, self._voltage_context_object, self.rfinputs)
 
         # Populate coarse channels
         self.coarse_channels = CoarseChannel.get_coarse_channels(None, self._voltage_context_object)

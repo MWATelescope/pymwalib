@@ -27,28 +27,28 @@ class Baseline:
     index : int
         Ordinal index of this time step.
 
-    antenna_index1 : int
+    ant1_index : int
         The index in the antenna array for the first member of the baseline
 
-    antenna_index2 : int
+    ant2_index : int
         The index in the antenna array for the second member of the baseline
 
     """
 
     def __init__(self,
                  index: int,
-                 antenna1_index: int,
-                 antenna2_index: int):
+                 ant1_index: int,
+                 ant2_index: int):
         """Initialise the class"""
         self.index: int = index
-        self.antenna1_index: int = antenna1_index
-        self.antenna2_index: int = antenna2_index
+        self.ant1_index: int = ant1_index
+        self.ant2_index: int = ant2_index
 
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(" \
                f"Order: {self.index}, " \
-               f"Antennas: {self.antenna1_index} v {self.antenna2_index})"
+               f"Antennas: {self.ant1_index} v {self.ant2_index})"
 
     @staticmethod
     def get_baselines(metafits_context: ct.POINTER(CMetafitsContextS),
@@ -75,8 +75,8 @@ class Baseline:
             for i in range(0, c_len_ptr.value):
                 # Populate all the fields
                 baselines.append(Baseline(i,
-                                          c_array_ptr[i].antenna1_index,
-                                          c_array_ptr[i].antenna2_index))
+                                          c_array_ptr[i].ant1_index,
+                                          c_array_ptr[i].ant2_index))
 
             # We're now finished with the C memory, so free it
             mwalib.mwalib_baselines_free(c_array_ptr, c_len_ptr.value)

@@ -12,9 +12,6 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
-import enum
-import numpy.ctypeslib as npct
-from datetime import datetime
 from pymwalib.mwalib import *
 from pymwalib.errors import *
 from pymwalib.common import CorrelatorVersion, ERROR_MESSAGE_LEN
@@ -39,15 +36,15 @@ class VoltageMetadata:
 
             # Populate all the fields
             self.corr_version: CorrelatorVersion = c_object.corr_version
-            self.start_gps_time_milliseconds: int = c_object.start_gps_time_milliseconds
-            self.end_gps_time_milliseconds: int = c_object.end_gps_time_milliseconds
-            self.duration_milliseconds: int = c_object.duration_milliseconds
+            self.start_gps_time_ms: int = c_object.start_gps_time_ms
+            self.end_gps_time_ms: int = c_object.end_gps_time_ms
+            self.duration_ms: int = c_object.duration_ms
             self.num_timesteps: int = c_object.num_timesteps
-            self.num_coarse_channels: int = c_object.num_coarse_channels
+            self.num_coarse_chans: int = c_object.num_coarse_chans
             self.bandwidth_hz: int = c_object.bandwidth_hz
-            self.coarse_channel_width_hz: int = c_object.coarse_channel_width_hz
-            self.fine_channel_width_hz: int = c_object.fine_channel_width_hz
-            self.num_fine_channels_per_coarse: int = c_object.num_fine_channels_per_coarse
+            self.coarse_chan_width_hz: int = c_object.coarse_chan_width_hz
+            self.fine_chan_width_hz: int = c_object.fine_chan_width_hz
+            self.num_fine_chans_per_coarse: int = c_object.num_fine_chans_per_coarse
 
             # We're now finished with the C memory, so free it
             mwalib.mwalib_voltage_metadata_free(c_object)
@@ -56,12 +53,12 @@ class VoltageMetadata:
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
                f"Correlator Version                    : {CorrelatorVersion(self.corr_version).name}\n" \
-               f"(actual) Start time (GPS)             : {float(self.start_gps_time_milliseconds) / 1000.} UNIX\n" \
-               f"(actual) End time (GPS)               : {float(self.end_gps_time_milliseconds) / 1000.} UNIX\n" \
-               f"(actual) Duration                     : {float(self.duration_milliseconds) / 1000.} s\n" \
+               f"(actual) Start time (GPS)             : {float(self.start_gps_time_ms) / 1000.} UNIX\n" \
+               f"(actual) End time (GPS)               : {float(self.end_gps_time_ms) / 1000.} UNIX\n" \
+               f"(actual) Duration                     : {float(self.duration_ms) / 1000.} s\n" \
                f"(actual) num timesteps                : {self.num_timesteps}\n" \
-               f"(actual) num coarse channels          : {self.num_coarse_channels}\n" \
-               f"Correlator fine channel width         : {float(self.fine_channel_width_hz) / 1000.} kHz\n" \
+               f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
+               f"Correlator fine channel width         : {float(self.fine_chan_width_hz) / 1000.} kHz\n" \
                f"(Data) Observation bandwidth          : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
-               f"Coarse channel width                  : {float(self.coarse_channel_width_hz) / 1000000.} MHz\n" \
-               f"Num fine channels per coarse          : {self.num_fine_channels_per_coarse}\n)\n"
+               f"Coarse channel width                  : {float(self.coarse_chan_width_hz) / 1000000.} MHz\n" \
+               f"Num fine channels per coarse          : {self.num_fine_chans_per_coarse}\n)\n"

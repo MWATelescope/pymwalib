@@ -33,14 +33,14 @@ class Antenna:
 
     def __init__(self,
                  index: int,
-                 antenna: int,
+                 ant: int,
                  tile_id: int,
                  tile_name: str,
                  rf_input_x: RFInput,
                  rf_input_y: RFInput):
         """Initialise the class"""
         self.index: int = index
-        self.antenna: int = antenna
+        self.ant: int = ant
         self.tile_id: int = tile_id
         self.tile_name: str = tile_name
         self.rf_input_x: RFInput = rf_input_x
@@ -50,7 +50,7 @@ class Antenna:
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(" \
                f"Index: {self.index}, " \
-               f"Antenna: {self.antenna}, " \
+               f"ant: {self.ant}, " \
                f"Tile Id: {self.tile_id}, " \
                f"Tile Name: {self.tile_name}, " \
                f"RF Input X: {self.rf_input_x!r}, " \
@@ -82,7 +82,7 @@ class Antenna:
             for i in range(0, c_len_ptr.value):
                 # Populate all the fields
                 antennas.append(Antenna(i,
-                                 c_array_ptr[i].antenna,
+                                 c_array_ptr[i].ant,
                                  c_array_ptr[i].tile_id,
                                  c_array_ptr[i].tile_name.decode("utf-8"),
                                  rf_inputs[i * 2],

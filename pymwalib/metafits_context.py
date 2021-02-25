@@ -38,13 +38,13 @@ class MetafitsContext:
         self.rfinputs = RFInput.get_rfinputs(self._metafits_context_object, None, None)
 
         # Populate antennas
-        self.antennas = Antenna.get_antennas(self._metafits_context_object, None, None, self.rfinputs)
+        self.ants = Antenna.get_antennas(self._metafits_context_object, None, None, self.rfinputs)
 
         # Populate baselines
         self.baselines = Baseline.get_baselines(self._metafits_context_object, None, None)
 
         # Populate visibility pols
-        self.baselines = VisibilityPol.get_visibility_pols(self._metafits_context_object, None, None)
+        self.vis_pols = VisibilityPol.get_visibility_pols(self._metafits_context_object, None, None)
 
     def __enter__(self):
         return self

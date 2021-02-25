@@ -34,7 +34,7 @@ class RFInput:
     def __init__(self,
                  index: int,
                  input: int,
-                 antenna: int,
+                 ant: int,
                  tile_id: int,
                  tile_name: str,
                  pol: str,
@@ -45,12 +45,12 @@ class RFInput:
                  vcs_order: int,
                  subfile_order: int,
                  flagged: bool,
-                 receiver_number: int,
-                 receiver_slot_number: int):
+                 rec_number: int,
+                 rec_slot_number: int):
         """Initialise the class"""
         self.index: int = index
         self.input: int = input
-        self.antenna: int = antenna
+        self.ant: int = ant
         self.tile_id: int = tile_id
         self.tile_name: str = tile_name
         self.pol: str = pol
@@ -61,15 +61,15 @@ class RFInput:
         self.vcs_order: int = vcs_order
         self.subfile_order: int = subfile_order
         self.flagged: bool = flagged
-        self.receiver_number = receiver_number
-        self.receiver_slot_number = receiver_slot_number
+        self.rec_number = rec_number
+        self.rec_slot_number = rec_slot_number
 
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(" \
                f"Index: {self.index}, " \
                f"Input: {self.input}, " \
-               f"Antenna: {self.antenna}, " \
+               f"Ant: {self.ant}, " \
                f"Tile Id: {self.tile_id}, " \
                f"Tile Name: {self.tile_name}, " \
                f"Pol: {self.pol}, " \
@@ -80,8 +80,8 @@ class RFInput:
                f"vcs_order: {self.vcs_order}, " \
                f"subfile_order: {self.subfile_order}, " \
                f"flagged: {self.flagged}, " \
-               f"receiver_number: {self.receiver_number}, " \
-               f"receiver_slot_number: {self.receiver_slot_number})"
+               f"rec_number: {self.rec_number}, " \
+               f"rec_slot_number: {self.rec_slot_number})"
 
     @staticmethod
     def get_rfinputs(metafits_context: ct.POINTER(CMetafitsContextS),
@@ -109,7 +109,7 @@ class RFInput:
                 # Populate all the fields
                 rf_inputs.append(RFInput(i,
                                          c_array_ptr[i].input,
-                                         c_array_ptr[i].antenna,
+                                         c_array_ptr[i].ant,
                                          c_array_ptr[i].tile_id,
                                          c_array_ptr[i].tile_name.decode("utf-8"),
                                          c_array_ptr[i].pol.decode("utf-8"),
@@ -120,8 +120,8 @@ class RFInput:
                                          c_array_ptr[i].vcs_order,
                                          c_array_ptr[i].subfile_order,
                                          c_array_ptr[i].flagged,
-                                         c_array_ptr[i].receiver_number,
-                                         c_array_ptr[i].receiver_slot_number))
+                                         c_array_ptr[i].rec_number,
+                                         c_array_ptr[i].rec_slot_number))
 
             # We're now finished with the C memory, so free it
             mwalib.mwalib_rfinputs_free(c_array_ptr, c_len_ptr.value)
