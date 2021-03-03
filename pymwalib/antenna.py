@@ -85,8 +85,8 @@ class Antenna:
                                  c_array_ptr[i].ant,
                                  c_array_ptr[i].tile_id,
                                  c_array_ptr[i].tile_name.decode("utf-8"),
-                                 rf_inputs[i * 2],
-                                 rf_inputs[(i * 2) + 1]))
+                                 rf_inputs[c_array_ptr[i].rfinput_x],
+                                 rf_inputs[c_array_ptr[i].rfinput_y]))
 
             # We're now finished with the C memory, so free it
             mwalib.mwalib_antennas_free(c_array_ptr, c_len_ptr.value)

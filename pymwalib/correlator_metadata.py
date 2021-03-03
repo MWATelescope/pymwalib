@@ -39,6 +39,8 @@ class CorrelatorMetadata:
             self.corr_version: CorrelatorVersion = c_object.corr_version
             self.start_unix_time_ms: int = c_object.start_unix_time_ms
             self.end_unix_time_ms: int = c_object.end_unix_time_ms
+            self.start_gps_time_ms: int = c_object.start_gps_time_ms
+            self.end_gps_time_ms: int = c_object.end_gps_time_ms
             self.duration_ms: int = c_object.duration_ms
             self.num_timesteps: int = c_object.num_timesteps
             self.num_coarse_chans: int = c_object.num_coarse_chans
@@ -54,12 +56,14 @@ class CorrelatorMetadata:
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
                f"Correlator Version                    : {CorrelatorVersion(self.corr_version).name}\n" \
-               f"(actual) Start time                   : {float(self.start_unix_time_ms) / 1000.} UNIX\n" \
-               f"(actual) End time                     : {float(self.end_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) Start time (UNIX)            : {float(self.start_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) End time (UNIX)              : {float(self.end_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) Start time (GPS)             : {float(self.start_gps_time_ms) / 1000.} UNIX\n" \
+               f"(actual) End time (GPS)               : {float(self.end_gps_time_ms) / 1000.} UNIX\n" \
                f"(actual) Duration                     : {float(self.duration_ms) / 1000.} s\n" \
                f"(actual) num timesteps                : {self.num_timesteps}\n" \
                f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
-               f"(Data) Observation bandwidth          : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
+               f"(Data) Bandwidth (of data we have)    : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
                f"Num bytes per timestep coarse channel : " \
                f"{float(self.num_timestep_coarse_chan_bytes) / (1024. * 1024.)} MB\n" \
                f"Num floats per timestep coarse channel: " \

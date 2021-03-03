@@ -38,8 +38,12 @@ class VoltageMetadata:
             self.corr_version: CorrelatorVersion = c_object.corr_version
             self.start_gps_time_ms: int = c_object.start_gps_time_ms
             self.end_gps_time_ms: int = c_object.end_gps_time_ms
+            self.start_unix_time_ms: int = c_object.start_unix_time_ms
+            self.end_unix_time_ms: int = c_object.end_unix_time_ms
             self.duration_ms: int = c_object.duration_ms
             self.num_timesteps: int = c_object.num_timesteps
+            self.timesteps_duration_ms: int = c_object.timestep_duration_ms
+            self.num_samples_per_timestep: int = c_object.num_samples_per_timestep
             self.num_coarse_chans: int = c_object.num_coarse_chans
             self.bandwidth_hz: int = c_object.bandwidth_hz
             self.coarse_chan_width_hz: int = c_object.coarse_chan_width_hz
@@ -53,12 +57,16 @@ class VoltageMetadata:
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
                f"Correlator Version                    : {CorrelatorVersion(self.corr_version).name}\n" \
-               f"(actual) Start time (GPS)             : {float(self.start_gps_time_ms) / 1000.} UNIX\n" \
-               f"(actual) End time (GPS)               : {float(self.end_gps_time_ms) / 1000.} UNIX\n" \
+               f"(actual) Start time (UNIX)            : {float(self.start_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) End time (UNIX)              : {float(self.end_unix_time_ms) / 1000.} UNIX\n" \
+               f"(actual) Start time (GPS)             : {float(self.start_gps_time_ms) / 1000.} GPS\n" \
+               f"(actual) End time (GPS)               : {float(self.end_gps_time_ms) / 1000.} GPS\n" \
                f"(actual) Duration                     : {float(self.duration_ms) / 1000.} s\n" \
                f"(actual) num timesteps                : {self.num_timesteps}\n" \
+               f"Tmestep duration (ms)                 : {self.timesteps_duration_ms} ms\n" \
+               f"Num samples per timestep              : {self.num_samples_per_timestep}\n" \
                f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
-               f"Correlator fine channel width         : {float(self.fine_chan_width_hz) / 1000.} kHz\n" \
-               f"(Data) Observation bandwidth          : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
+               f"(Data) Bandwidth (of data we have)    : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
                f"Coarse channel width                  : {float(self.coarse_chan_width_hz) / 1000000.} MHz\n" \
+               f"Fine channel width                    : {float(self.fine_chan_width_hz) / 1000.} kHz\n" \
                f"Num fine channels per coarse          : {self.num_fine_chans_per_coarse}\n)\n"

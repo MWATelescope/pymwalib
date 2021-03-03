@@ -125,6 +125,7 @@ if mwalib:
                     ('sched_duration_ms', ct.c_uint64),
                     ('quack_time_duration_ms', ct.c_uint64),
                     ('good_time_unix_ms', ct.c_uint64),
+                    ('good_time_gps_ms', ct.c_uint64),
                     ('num_ants', ct.c_size_t),
                     ('num_rf_inputs', ct.c_size_t),
                     ('num_ant_pols', ct.c_size_t),
@@ -133,7 +134,7 @@ if mwalib:
                     ('num_coarse_chans', ct.c_size_t),
                     ('obs_bandwidth_hz', ct.c_uint32),
                     ('coarse_chan_width_hz', ct.c_uint32),
-                    ('metafits_centre_freq_hz', ct.c_uint32),
+                    ('centre_freq_hz', ct.c_uint32),
                     ('metafits_filename', ct.c_char_p)
                     ]
 
@@ -280,7 +281,9 @@ if mwalib:
     class CAntennaS(ct.Structure):
         _fields_ = [('ant', ct.c_uint32),
                     ('tile_id', ct.c_uint32),
-                    ('tile_name', ct.c_char_p), ]
+                    ('tile_name', ct.c_char_p),
+                    ('rfinput_x', ct.c_size_t),
+                    ('rfinput_y', ct.c_size_t),]
 
 
     #
