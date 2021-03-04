@@ -4,7 +4,7 @@ Changes in each release are listed below. Please see MWATelescope/mwalib CHANGEL
 
 ## 0.5.0 04-Mar-2021 (Pre-release)
 
-* Requires mwalib 0.5.0.
+* Requires mwalib 0.5.1.
 * Major refactor to match major refactor in mwalib 0.5.0. This will break compatibility with previous pymwalib versions.
     * Context top level object now split into:
         * MetafitsContext (when you only provide a metafits file)
