@@ -2,6 +2,16 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.5.0 04-Mar-2021 (Pre-release)
+
+* Requires mwalib 0.5.0.
+* Major refactor to match major refactor in mwalib 0.5.0. This will break compatibility with previous pymwalib versions.
+    * Context top level object now split into:
+        * MetafitsContext (when you only provide a metafits file)
+        * CorrelatorContext (when you provide a metafits and 1 or more gpubox files)
+        * VoltageContext (when you provide a metafits and 1 or more voltage files)
+* Many new class members added to various classes.
+
 ## 0.4.4 08-Jan-2021 (Pre-release)
 
 * Requires mwalib 0.4.4.
