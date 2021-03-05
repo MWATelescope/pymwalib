@@ -10,7 +10,7 @@ setup(
   author = 'Greg Sleap',
   author_email = 'greg.sleap@curtin.edu.au',
   url = 'https://github.com/MWATelescope/pymwalib',
-  download_url = 'https://github.com/MWATelescope/pymwalib/archive/v0.6.0.tar.gz',
+  download_url = 'https://github.com/MWATelescope/pymwalib/archive/v0.6.1.tar.gz',
   keywords = ['MWA', 'radioastronomy'],
   install_requires = [
           'numpy',
