@@ -30,13 +30,20 @@ $ sudo cp include/mwalib.h /usr/local/include/.
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/absolute/path/to/mwalib/lib/directory
 ```
 
-## Clone this repository
+## Install pymwalib from pypi
+You can install pymwalib via pip. Before doing so, you may want to create a new virtual environment, first. Then:
+```
+$ pip install pymwalib
+```
+
+## Build pymwalib from source
+### Clone this repository
 * Clone master or a specific release / commit- the example below will clone the master branch.
 ```bash
 $ git clone https://github.com/MWATelescope/pymwalib.git pymwalib
 ```
 
-## Setup virtual environment and install requirements
+### Setup virtual environment and install requirements
 * Create virtual environment
 ```bash
 $ cd pymwalib
@@ -52,7 +59,7 @@ $ source env/bin/activate
 (env)$ pip install -r requirements.txt 
 ```
 
-## Build pymwalib
+### Build pymwalib
 * Run the setup.py to build the library
 ```bash
 (env)$ python setup.py install
