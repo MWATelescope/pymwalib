@@ -13,7 +13,7 @@ RUN apt-get -y update; \
 # Get mwalib
 RUN cd /tmp; \
     mkdir libmwalib; \
-    wget "https://github.com/MWATelescope/mwalib/releases/download/v0.3.2/libmwalib-0.3.2-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
+    wget "https://github.com/MWATelescope/mwalib/releases/download/v0.3.2/libmwalib-0.6.2-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
     tar -xzf libmwalib.tar.gz -C libmwalib; \
     cd libmwalib; \
     cp lib/libmwalib.so /usr/local/lib/.; \
