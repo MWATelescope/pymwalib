@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 #
-# context: main interface for pymwalib
+# Common classes and functions
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-# Adapted from:
-# http://jakegoulding.com/rust-ffi-omnibus/objects/
-#
-# Additional documentation:
-# https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
 import enum
 

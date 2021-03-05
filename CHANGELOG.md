@@ -2,6 +2,11 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.6.0 05-Mar-2021 (Pre-release)
+
+* Requires mwalib 0.6.*.
+* Moved coax_v_factor, mwa_lat_radians, mwa_long_radians and mwa_alt_meters out of metafits_metadata and are now constants.
+
 ## 0.5.0 04-Mar-2021 (Pre-release)
 
 * Requires mwalib 0.5.1.

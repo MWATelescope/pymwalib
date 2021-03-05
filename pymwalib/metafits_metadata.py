@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# context: main interface for pymwalib
+# Main class for access metafits metadata
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -41,10 +41,6 @@ class MetafitsMetadata:
             c_object = c_object_ptr.contents
 
             self.obs_id: int = c_object.obs_id
-            self.mwa_lat_rad: float = c_object.mwa_lat_rad
-            self.mwa_long_rad: float = c_object.mwa_long_rad
-            self.mwa_alt_metres: float = c_object.mwa_alt_metres
-            self.coax_v_factor: float = c_object.coax_v_factor
             self.global_analogue_attenuation_db: float = c_object.global_analogue_attenuation_db
             self.ra_tile_pointing_deg: float = c_object.ra_tile_pointing_deg
             self.dec_tile_pointing_deg: float = c_object.dec_tile_pointing_deg
@@ -102,10 +98,6 @@ class MetafitsMetadata:
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
                f"Obs ID                                : {self.obs_id}\n" \
-               f"MWA Lat                               : {self.mwa_lat_rad} rad\n" \
-               f"MWA Long                              : {self.mwa_long_rad} rad\n" \
-               f"MWA Alt                               : {self.mwa_alt_metres} m\n" \
-               f"Coax v factor                         : {self.coax_v_factor}\n" \
                f"Global attenuation                    : {self.global_analogue_attenuation_db} dB\n" \
                f"RA  (tile pointing)                   : {self.ra_tile_pointing_deg} deg\n" \
                f"Dec (tile pointing)                   : {self.dec_tile_pointing_deg} deg\n" \

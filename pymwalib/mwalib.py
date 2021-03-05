@@ -83,10 +83,6 @@ if mwalib:
     #
     class CMetafitsMetadataS(ct.Structure):
         _fields_ = [('obs_id', ct.c_uint32),
-                    ('mwa_lat_rad', ct.c_double),
-                    ('mwa_long_rad', ct.c_double),
-                    ('mwa_alt_metres', ct.c_double),
-                    ('coax_v_factor', ct.c_double),
                     ('global_analogue_attenuation_db', ct.c_double),
                     ('ra_tile_pointing_deg', ct.c_double),
                     ('dec_tile_pointing_deg', ct.c_double),
