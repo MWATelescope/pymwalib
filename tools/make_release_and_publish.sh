@@ -14,3 +14,6 @@ pip install twine
 
 echo Create the distribution
 python setup.py sdist
+
+# Upload to PyPi
+twine upload dist/*
