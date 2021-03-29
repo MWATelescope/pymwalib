@@ -35,7 +35,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install flake8 pytest
+          python -m pip install flake8 pytest pytest-cov
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
@@ -45,4 +45,9 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          python -m pytest
+          python -m pytest --cov-report xml --cov=pymwalib tests/
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
