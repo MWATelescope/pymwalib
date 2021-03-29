@@ -1,0 +1,48 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python application
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install MWALib
+        run: |
+          cd /tmp; \
+          mkdir libmwalib; \
+          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.6.2/libmwalib-0.6.2-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
+          tar -xzf libmwalib.tar.gz -C libmwalib; \
+          cd libmwalib; \
+          sudo cp lib/libmwalib.so /usr/local/lib/.; \
+          sudo cp lib/libmwalib.a /usr/local/lib/.; \
+          sudo cp include/mwalib.h /usr/local/include/.; \
+          cd ..; \
+          rm -rf libmwalib; \
+          sudo ldconfig;
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 pytest
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+          python -m pytest
