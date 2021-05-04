@@ -1,4 +1,6 @@
 # pymwalib
+![Tests](https://github.com/MWATelescope/pymwalib/workflows/Code%20Coverage/badge.svg)
+[![codecov](https://codecov.io/gh/MWATelescope/pymwalib/branch/master/graph/badge.svg)](https://codecov.io/gh/MWATelescope/pymwalib)
 A Python interface for [MWATelescope/mwalib](https://github.com/MWATelescope/mwalib) that provides a simple
 interface for reading MWA raw visibilities and exposing the relevant metadata. pymwalib and mwalib
 both support reading data produced by the existing (legacy) MWA correlator and the future MWAX
