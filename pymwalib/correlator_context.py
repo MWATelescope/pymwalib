@@ -99,7 +99,7 @@ class CorrelatorContext:
              raise ContextCorrelatorContextDisplayError(f"Error calling mwalib_correlator_context_display(): "
                                                         f"{error_message.decode('utf-8').rstrip()}")
 
-    def read_by_baseline(self, timestep_index, coarse_chan_index):
+    def read_by_baseline(self, timestep_index: int, coarse_chan_index: int):
          """Retrieve one HDU (ordered baseline,freq,pol,r,i) as a numpy array."""
          error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
@@ -117,7 +117,7 @@ class CorrelatorContext:
          else:
              return npct.as_array(buffer, shape=(self.correlator_metadata.num_timestep_coarse_chan_floats,))
 
-    def read_by_frequency(self, timestep_index, coarse_chan_index):
+    def read_by_frequency(self, timestep_index: int, coarse_chan_index: int):
         """Retrieve one HDU (ordered freq,baseline,pol,r,i) as a numpy array."""
         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
