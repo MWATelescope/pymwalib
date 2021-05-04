@@ -12,6 +12,7 @@
 # Additional documentation:
 # https://docs.python.org/3.8/library/ctypes.html#module-ctypes
 #
+import numpy.ctypeslib as npct
 from pymwalib.mwalib import *
 from pymwalib.common import ERROR_MESSAGE_LEN
 from pymwalib.errors import *
@@ -90,3 +91,45 @@ class VoltageContext:
              raise ContextCorrelatorContextDisplayError(f"Error calling mwalib_voltage_context_display(): "
                                                         f"{error_message.decode('utf-8').rstrip()}")
 
+    def read_file(self, timestep_index: int, coarse_chan_index: int):
+         """Retrieve one file of VCS data as a numpy array."""
+         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
+
+         byte_buffer_len = self.voltage_metadata.voltage_block_size_bytes * \
+                           self.voltage_metadata.num_voltage_blocks_per_timestep
+
+         byte_buffer_type = ct.c_byte * byte_buffer_len
+         buffer = byte_buffer_type()
+
+         if mwalib.mwalib_voltage_context_read_file(self._voltage_context_object,
+                                                    ct.c_size_t(timestep_index),
+                                                    ct.c_size_t(coarse_chan_index),
+                                                    buffer,
+                                                    byte_buffer_len,
+                                                    error_message, ERROR_MESSAGE_LEN) != 0:
+             raise ContextVoltageContextReadFileException(f"Error reading data: "
+                                                         f"{error_message.decode('utf-8').rstrip()}")
+         else:
+             return npct.as_array(buffer, shape=(byte_buffer_len,))
+
+    def read_second(self, gps_second_start: int , gps_second_count: int, coarse_chan_index: int):
+         """Retrieve multiple seconds of VCS data as a numpy array."""
+         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
+
+         byte_buffer_len = self.voltage_metadata.voltage_block_size_bytes * \
+                           self.voltage_metadata.num_voltage_blocks_per_timestep
+
+         byte_buffer_type = ct.c_byte * byte_buffer_len
+         buffer = byte_buffer_type()
+
+         if mwalib.mwalib_voltage_context_read_second(self._voltage_context_object,
+                                                      ct.c_ulong(gps_second_start),
+                                                      ct.c_size_t(gps_second_count),
+                                                      ct.c_size_t(coarse_chan_index),
+                                                      buffer,
+                                                      byte_buffer_len,
+                                                      error_message, ERROR_MESSAGE_LEN) != 0:
+             raise ContextVoltageContextReadFileException(f"Error reading data: "
+                                                         f"{error_message.decode('utf-8').rstrip()}")
+         else:
+             return npct.as_array(buffer, shape=(byte_buffer_len,))

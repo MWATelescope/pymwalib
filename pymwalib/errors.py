@@ -88,6 +88,14 @@ class ContextVoltageContextDisplayError(ContextError):
     """Raised when call to C mwalib_voltage_context_display fails"""
     pass
 
+class ContextVoltageContextReadFileException(ContextError):
+    """Raised when call to C mwalib_voltage_context_read_file fails"""
+    pass
+
+class ContextVoltageContextReadSecondException(ContextError):
+    """Raised when call to C mwalib_voltage_context_read_second fails"""
+    pass
+
 class ContextCorrelatorContextReadByBaselineException(ContextError):
     """Raised when call to C mwalibContext_read_by_baseline fails"""
     pass

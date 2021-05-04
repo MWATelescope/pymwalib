@@ -247,12 +247,19 @@ if mwalib:
                     ('duration_ms', ct.c_uint64),
                     ('num_timesteps', ct.c_size_t),
                     ('timestep_duration_ms', ct.c_uint64),
-                    ('num_samples_per_timestep', ct.c_size_t),
                     ('num_coarse_chans', ct.c_size_t),
                     ('bandwidth_hz', ct.c_uint32),
                     ('coarse_chan_width_hz', ct.c_uint32),
                     ('fine_chan_width_hz', ct.c_uint32),
                     ('num_fine_chans_per_coarse', ct.c_size_t),
+                    ('sample_size_bytes', ct.c_size_t),
+                    ('num_voltage_blocks_per_timestep', ct.c_size_t),
+                    ('num_voltage_blocks_per_second', ct.c_size_t),
+                    ('num_samples_per_voltage_block', ct.c_size_t),
+                    ('voltage_block_size_bytes', ct.c_size_t),
+                    ('delay_block_size_bytes', ct.c_size_t),
+                    ('data_file_header_size_bytes', ct.c_size_t),
+                    ('expected_voltage_data_file_size_bytes', ct.c_size_t)
                     ]
 
     #
@@ -270,6 +277,33 @@ if mwalib:
     #
     mwalib.mwalib_voltage_metadata_free.argtypes = (ct.POINTER(CVoltageMetadataS),)
     mwalib.mwalib_voltage_metadata_free.restype = ct.c_int32
+
+    #
+    # mwalib_voltage_context_read_file()
+    #
+    mwalib.mwalib_voltage_context_read_file.argtypes = \
+        (ct.POINTER(CVoltageContextS),  # context
+         ct.c_size_t,  # input timestep_index
+         ct.c_size_t,  # input coarse_chan_index
+         ct.POINTER(ct.c_byte),  # buffer_ptr
+         ct.c_size_t,  # buffer_len
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
+    mwalib.mwalib_voltage_context_read_file.restype = ct.c_int32
+
+    #
+    # mwalib_voltage_context_read_second()
+    #
+    mwalib.mwalib_voltage_context_read_second.argtypes = \
+        (ct.POINTER(CVoltageContextS),  # context
+         ct.c_ulong,   # input gps second start
+         ct.c_size_t,  # input gps second count
+         ct.c_size_t,  # input coarse_chan_index
+         ct.POINTER(ct.c_byte),  # buffer_ptr
+         ct.c_size_t,  # buffer_len
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
+    mwalib.mwalib_voltage_context_read_second.restype = ct.c_int32
 
     #
     # C Antenna struct
