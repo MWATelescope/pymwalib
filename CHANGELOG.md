@@ -2,6 +2,15 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.7.0 04-May-2021 (Pre-release)
+
+* Requires mwalib 0.7.*.
+* Added read methods for VoltageContext (to match 0.7.* of mwalib)
+* Updated voltage context to match latest 0.7.* mwalib (removed num_samples_per_timestep and added many new descriptive attributes)
+* Added paramter type hints to the correlator context read methods
+* Added more tests for correlator context
+* Updated CI to pip install numpy as some tests now require numpy
+
 ## 0.6.0 05-Mar-2021 (Pre-release)
 
 * Requires mwalib 0.6.*.

@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
   name = 'pymwalib',
   packages = ['pymwalib'],
-  version = '0.6.2',
+  version = '0.7.0',
   license = 'mpl-2.0',
   description = 'A Python interface for mwalib, a library to read Murchison Widefield Array (MWA) raw visibilities, voltages and metadata into a common structure',
   long_description = long_description,
@@ -28,7 +28,6 @@ setup(
     'Intended Audience :: Science/Research',
     'Topic :: Scientific/Engineering :: Astronomy',
     'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
-    'Programming Language :: Python :: 3 :: Only',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
