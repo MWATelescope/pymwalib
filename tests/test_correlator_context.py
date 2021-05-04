@@ -43,10 +43,11 @@ def test_mwax_coarse_channels(mwax_context):
     assert mwax_context.coarse_channels[1].rec_chan_number == 118
 
     #
-    # TODO re-enable these two test with v0.8+ of mwalib
+    # NOTE due to this being a modified metafits, the below is true.
+    # With the "real" metafits the corr_chan_numbers would be 8 and 9 respectively
     #
-    #assert mwax_context.coarse_channels[0].corr_chan_number == 8
-    #assert mwax_context.coarse_channels[1].corr_chan_number == 9
+    assert mwax_context.coarse_channels[0].corr_chan_number == 0
+    assert mwax_context.coarse_channels[1].corr_chan_number == 1
 
 def test_mwax_timesteps(mwax_context):
     assert len(mwax_context.timesteps) == 4
