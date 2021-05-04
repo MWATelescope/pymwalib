@@ -71,12 +71,12 @@ class VoltageMetadata:
                f"(actual) End time (GPS)               : {float(self.end_gps_time_ms) / 1000.} GPS\n" \
                f"(actual) Duration                     : {float(self.duration_ms) / 1000.} s\n" \
                f"(actual) num timesteps                : {self.num_timesteps}\n" \
-               f"Tmestep duration (ms)                 : {self.timesteps_duration_ms} ms\n" \               
+               f"Tmestep duration (ms)                 : {self.timesteps_duration_ms} ms\n" \
                f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
                f"(Data) Bandwidth (of data we have)    : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
                f"Coarse channel width                  : {float(self.coarse_chan_width_hz) / 1000000.} MHz\n" \
                f"Fine channel width                    : {float(self.fine_chan_width_hz) / 1000.} kHz\n" \
-               f"Num fine channels per coarse          : {self.num_fine_chans_per_coarse}\n" \               
+               f"Num fine channels per coarse          : {self.num_fine_chans_per_coarse}\n" \
                f"Sample size                           : {self.sample_size_bytes} bytes\n" \
                f"Num voltage blocks per timeste        : {self.num_voltage_blocks_per_timestep}\n" \
                f"Num voltage blocks per second         : {self.num_voltage_blocks_per_second}\n" \
