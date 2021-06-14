@@ -3,3 +3,7 @@ env/
 build/
 dist/
 pymwalib.egg-info/
+.pytest_cache/
+pymwalib.egg-info/
+tests/__pycache__/
+.python-version

@@ -6,16 +6,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# Adapted from:
-# http://jakegoulding.com/rust-ffi-omnibus/objects/
-#
-# Additional documentation:
-# https://docs.python.org/3.8/library/ctypes.html#module-ctypes
-#
-from pymwalib.mwalib import create_string_buffer, mwalib, CBaselineS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
-from pymwalib.common import ERROR_MESSAGE_LEN
-from pymwalib.errors import *
 import ctypes as ct
+from .mwalib import create_string_buffer, mwalib_library, CBaselineS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
+from .common import ERROR_MESSAGE_LEN
+from .errors import PymwalibBaselinesGetError
 
 
 class Baseline:
@@ -61,7 +55,7 @@ class Baseline:
         c_array_ptr = ct.POINTER(CBaselineS)()
         c_len_ptr = ct.c_size_t(0)
 
-        if mwalib.mwalib_baselines_get(metafits_context,
+        if mwalib_library.mwalib_baselines_get(metafits_context,
                                        correlator_context,
                                        voltage_context,
                                        ct.byref(c_array_ptr),
@@ -69,7 +63,7 @@ class Baseline:
                                        error_message,
                                        ERROR_MESSAGE_LEN) != 0:
             # Error
-            raise ContextCorrelatorBaselinesGetError(f"Error getting baseline object: "
+            raise PymwalibBaselinesGetError(f"Error getting baseline object: "
                                                      f"{error_message.decode('utf-8').rstrip()}")
         else:
             for i in range(0, c_len_ptr.value):
@@ -79,6 +73,6 @@ class Baseline:
                                           c_array_ptr[i].ant2_index))
 
             # We're now finished with the C memory, so free it
-            mwalib.mwalib_baselines_free(c_array_ptr, c_len_ptr.value)
+            mwalib_library.mwalib_baselines_free(c_array_ptr, c_len_ptr.value)
 
             return baselines

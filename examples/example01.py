@@ -9,9 +9,21 @@
 import argparse
 import numpy as np
 from pymwalib.correlator_context import CorrelatorContext
+from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannel
+from pymwalib.version import check_mwalib_version
 
 if __name__ == "__main__":
+    # ensure we have a compatible mwalib first
+    # You can skip this if you want, but your first pymwalib call will raise an error. Best trap it here
+    # and provide a nice user message
+    try:
+        check_mwalib_version()
+    except Exception as e:
+        print(e)
+        exit(1)
+
     parser = argparse.ArgumentParser()
+
     parser.add_argument("-m", "--metafits", required=True,
                         help="Path to the metafits file.")
     parser.add_argument("gpuboxes", nargs='*',
@@ -58,11 +70,6 @@ if __name__ == "__main__":
         for t in context.timesteps:
             print(repr(t))
 
-        # Test visibility pols
-        print("\n\n\nTesting visibility pols:")
-        for c in context.visibility_pols:
-            print(repr(c))
-
         # Test the debug "display" method
         print("\n\n\nTesting Display method:")
         context.display()
@@ -79,13 +86,15 @@ if __name__ == "__main__":
                  try:
                      data = context.read_by_baseline(timestep_index,
                                                      coarse_chan_index)
+                     total_sum += np.sum(data, dtype=np.float64)
+
+                 except PymwalibNoDataForTimestepAndCoarseChannel:
+                     pass
+
                  except Exception as e:
                      print(f"Error: {e}")
                      exit(-1)
 
-                 this_sum = np.sum(data, dtype=np.float64)
-
-                 total_sum += this_sum
         print("Total sum by baseline:  {}".format(total_sum))
 
         # Sum the data by frequency
@@ -97,11 +106,13 @@ if __name__ == "__main__":
                  try:
                      data = context.read_by_frequency(timestep_index,
                                                       coarse_chan_index)
+                     total_sum += np.sum(data, dtype=np.float64)
+
+                 except PymwalibNoDataForTimestepAndCoarseChannel:
+                     pass
+
                  except Exception as e:
                      print(f"Error: {e}")
                      exit(-1)
 
-                 this_sum = np.sum(data, dtype=np.float64)
-
-                 total_sum += this_sum
         print("Total sum by frequency: {}".format(total_sum))

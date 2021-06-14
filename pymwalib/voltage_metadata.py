@@ -6,15 +6,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# Adapted from:
-# http://jakegoulding.com/rust-ffi-omnibus/objects/
-#
-# Additional documentation:
-# https://docs.python.org/3.8/library/ctypes.html#module-ctypes
-#
-from pymwalib.mwalib import *
-from pymwalib.errors import *
-from pymwalib.common import CorrelatorVersion, ERROR_MESSAGE_LEN
+from .mwalib import mwalib_library,ct,CVoltageMetadataS, CVoltageContextS,create_string_buffer
+from .errors import PymwalibVoltageMetadataGetError
+from .common import MWAVersion, ERROR_MESSAGE_LEN
 
 
 class VoltageMetadata:
@@ -25,26 +19,43 @@ class VoltageMetadata:
 
         c_object_ptr = ct.POINTER(CVoltageMetadataS)()
 
-        if mwalib.mwalib_voltage_metadata_get(voltage_context,
+        if mwalib_library.mwalib_voltage_metadata_get(voltage_context,
                                               ct.byref(c_object_ptr),
                                               error_message,
                                               ERROR_MESSAGE_LEN) != 0:
-            raise ContextVoltageMetadataGetError(
+            raise PymwalibVoltageMetadataGetError(
                 f"Error creating voltage metadata object: {error_message.decode('utf-8').rstrip()}")
         else:
             c_object = c_object_ptr.contents
 
             # Populate all the fields
-            self.corr_version: CorrelatorVersion = c_object.corr_version
-            self.start_gps_time_ms: int = c_object.start_gps_time_ms
-            self.end_gps_time_ms: int = c_object.end_gps_time_ms
-            self.start_unix_time_ms: int = c_object.start_unix_time_ms
-            self.end_unix_time_ms: int = c_object.end_unix_time_ms
-            self.duration_ms: int = c_object.duration_ms
-            self.num_timesteps: int = c_object.num_timesteps
-            self.timesteps_duration_ms: int = c_object.timestep_duration_ms
-            self.num_coarse_chans: int = c_object.num_coarse_chans
-            self.bandwidth_hz: int = c_object.bandwidth_hz
+            self.mwa_version: MWAVersion = MWAVersion(c_object.mwa_version)
+
+            self.num_timesteps = c_object.num_timesteps
+            self.timestep_duration_ms: int = c_object.timestep_duration_ms
+            self.num_coarse_chans = c_object.num_coarse_chans
+
+            self.num_common_timesteps = c_object.num_common_timesteps
+            self.num_common_coarse_chans = c_object.num_common_coarse_chans
+            self.common_start_unix_time_ms = c_object.common_start_unix_time_ms
+            self.common_end_unix_time_ms = c_object.common_end_unix_time_ms
+            self.common_start_gps_time_ms = c_object.common_start_gps_time_ms
+            self.common_end_gps_time_ms = c_object.common_end_gps_time_ms
+            self.common_duration_ms = c_object.common_duration_ms
+            self.common_bandwidth_hz = c_object.common_bandwidth_hz
+
+            self.num_common_good_timesteps = c_object.num_common_good_timesteps
+            self.num_common_good_coarse_chans = c_object.num_common_good_coarse_chans
+            self.common_good_start_unix_time_ms = c_object.common_good_start_unix_time_ms
+            self.common_good_end_unix_time_ms = c_object.common_good_end_unix_time_ms
+            self.common_good_start_gps_time_ms = c_object.common_good_start_gps_time_ms
+            self.common_good_end_gps_time_ms = c_object.common_good_end_gps_time_ms
+            self.common_good_duration_ms = c_object.common_good_duration_ms
+            self.common_good_bandwidth_hz = c_object.common_good_bandwidth_hz
+
+            self.num_provided_timestep_indices = c_object.num_provided_timestep_indices
+            self.num_provided_coarse_chan_indices = c_object.num_provided_coarse_chan_indices
+
             self.coarse_chan_width_hz: int = c_object.coarse_chan_width_hz
             self.fine_chan_width_hz: int = c_object.fine_chan_width_hz
             self.num_fine_chans_per_coarse: int = c_object.num_fine_chans_per_coarse
@@ -59,21 +70,33 @@ class VoltageMetadata:
             self.expected_voltage_data_file_size_bytes: int = c_object.expected_voltage_data_file_size_bytes
 
             # We're now finished with the C memory, so free it
-            mwalib.mwalib_voltage_metadata_free(c_object)
+            mwalib_library.mwalib_voltage_metadata_free(c_object)
 
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
-               f"Correlator Version                    : {CorrelatorVersion(self.corr_version).name}\n" \
-               f"(actual) Start time (UNIX)            : {float(self.start_unix_time_ms) / 1000.} UNIX\n" \
-               f"(actual) End time (UNIX)              : {float(self.end_unix_time_ms) / 1000.} UNIX\n" \
-               f"(actual) Start time (GPS)             : {float(self.start_gps_time_ms) / 1000.} GPS\n" \
-               f"(actual) End time (GPS)               : {float(self.end_gps_time_ms) / 1000.} GPS\n" \
-               f"(actual) Duration                     : {float(self.duration_ms) / 1000.} s\n" \
-               f"(actual) num timesteps                : {self.num_timesteps}\n" \
-               f"Tmestep duration (ms)                 : {self.timesteps_duration_ms} ms\n" \
-               f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
-               f"(Data) Bandwidth (of data we have)    : {float(self.bandwidth_hz) / 1000000.} MHz\n" \
+               f"MWA Version                           : {MWAVersion(self.mwa_version).name}\n" \
+               f"Num timesteps                         : {self.num_timesteps}\n" \
+               f"Tmestep duration (ms)                 : {self.timestep_duration_ms} ms\n" \
+               f"Num coarse channels                   : {self.num_coarse_chans}\n" \
+               f"num_provided_timestep_indices         : {self.num_provided_timestep_indices}\n" \
+               f"num_provided_coarse_chan_indices      : {self.num_provided_coarse_chan_indices}\n" \
+               f"(common) Start time (UNIX)            : {float(self.common_start_unix_time_ms) / 1000.}\n" \
+               f"(common) End time (UNIX)              : {float(self.common_end_unix_time_ms) / 1000.}\n" \
+               f"(common) Start time (GPS)             : {float(self.common_start_gps_time_ms) / 1000.}\n" \
+               f"(common) End time (GPS)               : {float(self.common_end_gps_time_ms) / 1000.}\n" \
+               f"(common) Duration                     : {float(self.common_duration_ms) / 1000.} s\n" \
+               f"(common) num timesteps                : {self.num_common_timesteps}\n" \
+               f"(common) num coarse channels          : {self.num_common_coarse_chans}\n" \
+               f"(common) Bandwidth                    : {float(self.common_bandwidth_hz) / 1000000.} MHz\n" \
+               f"(common good) Start time (UNIX)       : {float(self.common_good_start_unix_time_ms) / 1000.}\n" \
+               f"(common good) End time (UNIX)         : {float(self.common_good_end_unix_time_ms) / 1000.}\n" \
+               f"(common good) Start time (GPS)        : {float(self.common_good_start_gps_time_ms) / 1000.}\n" \
+               f"(common good) End time (GPS)          : {float(self.common_good_end_gps_time_ms) / 1000.}\n" \
+               f"(common good) Duration                : {float(self.common_good_duration_ms) / 1000.} s\n" \
+               f"(common good) num timesteps           : {self.num_common_good_timesteps}\n" \
+               f"(common good) num coarse channels     : {self.num_common_good_coarse_chans}\n" \
+               f"(common good) Bandwidth               : {float(self.common_good_bandwidth_hz) / 1000000.} MHz\n" \
                f"Coarse channel width                  : {float(self.coarse_chan_width_hz) / 1000000.} MHz\n" \
                f"Fine channel width                    : {float(self.fine_chan_width_hz) / 1000.} kHz\n" \
                f"Num fine channels per coarse          : {self.num_fine_chans_per_coarse}\n" \

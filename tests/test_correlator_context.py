@@ -50,18 +50,11 @@ def test_mwax_coarse_channels(mwax_context):
     assert mwax_context.coarse_channels[1].corr_chan_number == 1
 
 def test_mwax_timesteps(mwax_context):
-    assert len(mwax_context.timesteps) == 4
+    assert len(mwax_context.timesteps) == 592
     assert mwax_context.timesteps[0].unix_time_ms == 1613491214000
     assert mwax_context.timesteps[1].unix_time_ms == 1613491214500
-    assert mwax_context.timesteps[2].unix_time_ms == 1613491294000
-    assert mwax_context.timesteps[3].unix_time_ms == 1613491294500
-
-def test_visibility_pols(mwax_context):
-    assert len(mwax_context.visibility_pols) == 4
-    assert mwax_context.visibility_pols[0].polarisation == "XX"
-    assert mwax_context.visibility_pols[1].polarisation == "XY"
-    assert mwax_context.visibility_pols[2].polarisation == "YX"
-    assert mwax_context.visibility_pols[3].polarisation == "YY"
+    assert mwax_context.timesteps[590].unix_time_ms == 1613491509000
+    assert mwax_context.timesteps[591].unix_time_ms == 1613491509500
 
 def test_baselines(mwax_context):
     assert len(mwax_context.baselines) == 3

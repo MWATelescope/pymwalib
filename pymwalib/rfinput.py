@@ -6,16 +6,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# Adapted from:
-# http://jakegoulding.com/rust-ffi-omnibus/objects/
-#
-# Additional documentation:
-# https://docs.python.org/3.8/library/ctypes.html#module-ctypes
-#
-from pymwalib.mwalib import create_string_buffer, mwalib, CRFInputS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
-from pymwalib.common import ERROR_MESSAGE_LEN
-from pymwalib.errors import *
 import ctypes as ct
+from .mwalib import create_string_buffer, mwalib_library, CRFInputS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
+from .common import ERROR_MESSAGE_LEN
+from .errors import PymwalibRFInputsGetError
 
 
 class RFInput:
@@ -94,7 +88,7 @@ class RFInput:
         c_array_ptr = ct.POINTER(CRFInputS)()
         c_len_ptr = ct.c_size_t(0)
 
-        if mwalib.mwalib_rfinputs_get(metafits_context,
+        if mwalib_library.mwalib_rfinputs_get(metafits_context,
                                       correlator_context,
                                       voltage_context,
                                       ct.byref(c_array_ptr),
@@ -102,7 +96,7 @@ class RFInput:
                                       error_message,
                                       ERROR_MESSAGE_LEN) != 0:
             # Error
-            raise ContextRFInputsGetError(f"Error getting rf_inputs object: "
+            raise PymwalibRFInputsGetError(f"Error getting rf_inputs object: "
                                           f"{error_message.decode('utf-8').rstrip()}")
         else:
             for i in range(0, c_len_ptr.value):
@@ -124,6 +118,6 @@ class RFInput:
                                          c_array_ptr[i].rec_slot_number))
 
             # We're now finished with the C memory, so free it
-            mwalib.mwalib_rfinputs_free(c_array_ptr, c_len_ptr.value)
+            mwalib_library.mwalib_rfinputs_free(c_array_ptr, c_len_ptr.value)
 
             return rf_inputs

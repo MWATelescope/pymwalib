@@ -2,6 +2,19 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.8.2 14-Jun-2021 (Pre-release)
+
+* Requires mwalib 0.8.2.
+* mwalib version is now checked upon creating an instance of MetafitsContext, CorrelatorContext or VoltageContext
+* pymwalib.version.check_mwalib_version() is exposed so callers can check and handle version incompatibility before using a context object.  
+* Antenna now includes electrical length and north,east,height attributes
+* MetafitsContext now has metafits_timesteps and metafits_coarse channels based on the metafits file only
+* CorrelatorContext and VoltageContext now have timesteps and coarse channels based on a superset of data files provided and the metafits file
+* CorrelatorContext and VoltageContext now have 'common' and 'common good' attributes describing the data files provided. 'Common' refers to timesteps and coarse channels which are common to all data files provided 'Common Good' determines 'Common' based on times after the quacktime.
+* In CorrelatorContext read_by_baseline() and read_by_frequency(), the timestep index and coarse channel index are based on the indices of the CorrelatorContext.timesteps and coarse_channels lists
+* In VoltageContext read_file() and read_second(), the timestep index and coarse channel index are based on the indices of the VoltageContext.timesteps and coarse_channels lists
+* For all read methods If no data exists for a timestep index or coarse channel index, then a `PymwalibNoDataForTimestepAndCoarseChannel` exception is raised
+
 ## 0.7.0 04-May-2021 (Pre-release)
 
 * Requires mwalib 0.7.*.

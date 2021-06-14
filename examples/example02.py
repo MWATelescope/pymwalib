@@ -15,6 +15,8 @@ import numpy as np
 import os
 from joblib import Parallel, delayed
 from pymwalib.correlator_context import CorrelatorContext
+from pymwalib.version import check_mwalib_version
+from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannel
 import time
 
 
@@ -29,12 +31,14 @@ def sum_by_baseline_task(metafits_filename: str, gpubox_filenames: list, coarse_
             for t in range(0, context.correlator_metadata.num_timesteps):
                 try:
                     data = context.read_by_frequency(t, coarse_chan_index)
+                    chan_sum += np.sum(data, dtype=np.float64)
+
+                except PymwalibNoDataForTimestepAndCoarseChannel:
+                    pass
+
                 except Exception as e:
                     print(f"Error: {e}")
                     exit(-1)
-
-                data_sum = np.sum(data, dtype=np.float64)
-                chan_sum += data_sum
 
     return chan_sum
 
@@ -51,17 +55,28 @@ def sum_by_baseline_slow(metafits_filename: str, gpubox_filenames: list) -> floa
                     try:
                         data = context.read_by_baseline(timestep_index,
                                                         coarse_chan_index)
+                        total_sum += np.sum(data, dtype=np.float64)
+
+                    except PymwalibNoDataForTimestepAndCoarseChannel:
+                        pass
+
                     except Exception as e:
                         print(f"Error: {e}")
                         exit(-1)
-
-                    data_sum = np.sum(data, dtype=np.float64)
-                    total_sum += data_sum
 
     return total_sum
 
 
 if __name__ == "__main__":
+    # ensure we have a compatible mwalib first
+    # You can skip this if you want, but your first pymwalib call will raise an error. Best trap it here
+    # and provide a nice user message
+    try:
+        check_mwalib_version()
+    except Exception as e:
+        print(e)
+        exit(1)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--metafits", required=True,
                         help="Path to the metafits file.")

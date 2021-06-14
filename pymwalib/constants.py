@@ -10,7 +10,7 @@
 #
 # the velocity factor of electic fields in RG-6 like coax cable
 #
-COAX_V_FACTOR = 1.204
+MWA_COAX_V_FACTOR = 1.204
 
 # The MWA's altitude in metres.
 MWA_ALTITUDE_METRES = 377.827

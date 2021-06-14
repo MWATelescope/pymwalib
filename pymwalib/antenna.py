@@ -6,17 +6,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# Adapted from:
-# http://jakegoulding.com/rust-ffi-omnibus/objects/
-#
-# Additional documentation:
-# https://docs.python.org/3.8/library/ctypes.html#module-ctypes
-#
-from pymwalib.mwalib import create_string_buffer, mwalib, CAntennaS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
-from pymwalib.common import ERROR_MESSAGE_LEN
-from pymwalib.errors import *
-from pymwalib.rfinput import RFInput
 import ctypes as ct
+from .mwalib import create_string_buffer, mwalib_library, CAntennaS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
+from .common import ERROR_MESSAGE_LEN
+from .errors import PymwalibAntennasGetError
+from .rfinput import RFInput
 
 class Antenna:
     """
@@ -37,7 +31,11 @@ class Antenna:
                  tile_id: int,
                  tile_name: str,
                  rf_input_x: RFInput,
-                 rf_input_y: RFInput):
+                 rf_input_y: RFInput,
+                 electrical_length_m: float,
+                 north_m: float,
+                 east_m: float,
+                 height_m: float):
         """Initialise the class"""
         self.index: int = index
         self.ant: int = ant
@@ -45,6 +43,11 @@ class Antenna:
         self.tile_name: str = tile_name
         self.rf_input_x: RFInput = rf_input_x
         self.rf_input_y: RFInput = rf_input_y
+        self.electrical_length_m = electrical_length_m
+        self.north_m = north_m
+        self.east_m = east_m
+        self.height_m = height_m
+
 
     def __repr__(self):
         """Returns a representation of the class"""
@@ -54,7 +57,11 @@ class Antenna:
                f"Tile Id: {self.tile_id}, " \
                f"Tile Name: {self.tile_name}, " \
                f"RF Input X: {self.rf_input_x!r}, " \
-               f"RF Input Y: {self.rf_input_y!r})"
+               f"RF Input Y: {self.rf_input_y!r}, " \
+               f"Electrical length: {self.electrical_length_m!r} m, " \
+               f"North: {self.north_m} m, " \
+               f"East: {self.east_m} m, " \
+               f"Height: {self.height_m} m)"
 
     @staticmethod
     def get_antennas(metafits_context: ct.POINTER(CMetafitsContextS),
@@ -68,7 +75,7 @@ class Antenna:
         c_array_ptr = ct.POINTER(CAntennaS)()
         c_len_ptr = ct.c_size_t(0)
 
-        if mwalib.mwalib_antennas_get(metafits_context,
+        if mwalib_library.mwalib_antennas_get(metafits_context,
                                       correlator_context,
                                       voltage_context,
                                       ct.byref(c_array_ptr),
@@ -76,7 +83,7 @@ class Antenna:
                                       error_message,
                                       ERROR_MESSAGE_LEN) != 0:
             # Error
-            raise ContextAntennasGetError(f"Error getting antennas object: "
+            raise PymwalibAntennasGetError(f"Error getting antennas object: "
                                           f"{error_message.decode('utf-8').rstrip()}")
         else:
             for i in range(0, c_len_ptr.value):
@@ -86,9 +93,13 @@ class Antenna:
                                  c_array_ptr[i].tile_id,
                                  c_array_ptr[i].tile_name.decode("utf-8"),
                                  rf_inputs[c_array_ptr[i].rfinput_x],
-                                 rf_inputs[c_array_ptr[i].rfinput_y]))
+                                 rf_inputs[c_array_ptr[i].rfinput_y],
+                                 c_array_ptr[i].electrical_length_m,
+                                 c_array_ptr[i].north_m,
+                                 c_array_ptr[i].east_m,
+                                 c_array_ptr[i].height_m))
 
             # We're now finished with the C memory, so free it
-            mwalib.mwalib_antennas_free(c_array_ptr, c_len_ptr.value)
+            mwalib_library.mwalib_antennas_free(c_array_ptr, c_len_ptr.value)
 
             return antennas

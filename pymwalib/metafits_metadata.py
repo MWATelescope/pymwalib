@@ -6,16 +6,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# Adapted from:
-# http://jakegoulding.com/rust-ffi-omnibus/objects/
-#
-# Additional documentation:
-# https://docs.python.org/3.8/library/ctypes.html#module-ctypes
-#
+import ctypes as ct
 from datetime import datetime
-from pymwalib.mwalib import *
-from pymwalib.common import ERROR_MESSAGE_LEN
-from pymwalib.errors import *
+from .mwalib import mwalib_library,CMetafitsMetadataS, CMetafitsContextS,CCorrelatorContextS,CVoltageContextS,create_string_buffer
+from .common import ERROR_MESSAGE_LEN, MWAMode, GeometricDelaysApplied
+from .errors import PymwalibMetafitsMetadataGetError
 
 
 class MetafitsMetadata:
@@ -28,13 +23,13 @@ class MetafitsMetadata:
 
         c_object_ptr = ct.POINTER(CMetafitsMetadataS)()
 
-        if mwalib.mwalib_metafits_metadata_get(metafits_context,
+        if mwalib_library.mwalib_metafits_metadata_get(metafits_context,
                                                correlator_context,
                                                voltage_context,
                                                ct.byref(c_object_ptr),
                                                error_message,
                                                ERROR_MESSAGE_LEN) != 0:
-            raise ContextMetafitsMetadataGetError(
+            raise PymwalibMetafitsMetadataGetError(
                 f"Error creating metafits metadata object: {error_message.decode('utf-8').rstrip()}")
         else:
             # Populate all the fields
@@ -64,7 +59,10 @@ class MetafitsMetadata:
             self.creator: str = c_object.creator.decode("utf-8")
             self.project_id: str = c_object.project_id.decode("utf-8")
             self.obs_name: str = c_object.obs_name.decode("utf-8")
-            self.mode: str = c_object.mode.decode("utf-8")
+            self.mode: MWAMode = c_object.mode
+            self.geometric_delays_applied: GeometricDelaysApplied = c_object.geometric_delays_applied
+            self.cable_delays_applied: bool = c_object.cable_delays_applied
+            self.calibration_delays_and_gains_applied: bool = c_object.calibration_delays_and_gains_applied
             self.corr_fine_chan_width_hz: int = c_object.corr_fine_chan_width_hz
             self.corr_int_time_ms: int = c_object.corr_int_time_ms
             self.num_corr_fine_chans_per_coarse: int = c_object.num_corr_fine_chans_per_coarse
@@ -85,14 +83,15 @@ class MetafitsMetadata:
             self.num_ant_pols: int = c_object.num_ant_pols
             self.num_baselines: int = c_object.num_baselines
             self.num_visibility_pols: int = c_object.num_visibility_pols
-            self.num_coarse_chans: int = c_object.num_coarse_chans
+            self.num_metafits_timesteps: int = c_object.num_metafits_timesteps
+            self.num_metafits_coarse_chans: int = c_object.num_metafits_coarse_chans
             self.obs_bandwidth_hz: int = c_object.obs_bandwidth_hz
             self.coarse_chan_width_hz: int = c_object.coarse_chan_width_hz
             self.centre_freq_hz: int = c_object.centre_freq_hz
             self.metafits_filename: str = c_object.metafits_filename.decode("utf-8")
 
             # We're now finished with the C memory, so free it
-            mwalib.mwalib_metafits_metadata_free(c_object)
+            mwalib_library.mwalib_metafits_metadata_free(c_object)
 
     def __repr__(self):
         """Returns a representation of the class"""
@@ -122,6 +121,9 @@ class MetafitsMetadata:
                f"Project ID                            : {self.project_id}\n" \
                f"Observation Name                      : {self.obs_name}\n" \
                f"Mode                                  : {self.mode}\n" \
+               f"geometric_delays_applied              : {self.geometric_delays_applied}\n" \
+               f"cable_delays_applied                  : {self.cable_delays_applied}\n"\
+               f"calibration_delays_and_gains_applied  : {self.calibration_delays_and_gains_applied}\n" \
                f"Correlator fine channel width (Hz)    : {self.corr_fine_chan_width_hz}\n" \
                f"Correlator int. time (ms)             : {self.corr_int_time_ms}\n" \
                f"Correlator fine channels per coarse   : {self.num_corr_fine_chans_per_coarse}\n" \
@@ -140,6 +142,7 @@ class MetafitsMetadata:
                f"Baselines                             : {self.num_baselines}\n" \
                f"Visibility pols                       : {self.num_visibility_pols}\n" \
                f"num antenna pols                      : {self.num_ant_pols}\n" \
-               f"(actual) num coarse channels          : {self.num_coarse_chans}\n" \
-               f"(Data) Observation bandwidth          : {float(self.obs_bandwidth_hz) / 1000000.} MHz\n" \
+               f"num metafits timesteps                : {self.num_metafits_timesteps}\n" \
+               f"num metafits coarse channe            : {self.num_metafits_coarse_chans}\n" \
+               f"Observation bandwidth                 : {float(self.obs_bandwidth_hz) / 1000000.} MHz\n" \
                f"Coarse channel width                  : {float(self.coarse_chan_width_hz) / 1000000.} MHz\n)\n"
