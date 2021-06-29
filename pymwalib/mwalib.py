@@ -333,9 +333,9 @@ if mwalib_library:
                     ('common_good_duration_ms', ct.c_uint64),
                     ('common_good_bandwidth_hz', ct.c_uint32),
 
-                    ('num_provided_timestep_indices', ct.c_size_t),
+                    ('num_provided_timesteps', ct.c_size_t),
                     ('provided_timestep_indices', ct.POINTER(ct.c_size_t)),
-                    ('num_provided_coarse_chan_indices', ct.c_size_t),
+                    ('num_provided_coarse_chans', ct.c_size_t),
                     ('provided_coarse_chan_indices', ct.POINTER(ct.c_size_t)),
 
                     ('num_timestep_coarse_chan_bytes', ct.c_size_t),
@@ -391,9 +391,9 @@ if mwalib_library:
                     ('common_good_duration_ms', ct.c_uint64),
                     ('common_good_bandwidth_hz', ct.c_uint32),
 
-                    ('num_provided_timestep_indices', ct.c_size_t),
+                    ('num_provided_timesteps', ct.c_size_t),
                     ('provided_timestep_indices', ct.POINTER(ct.c_size_t)),
-                    ('num_provided_coarse_chan_indices', ct.c_size_t),
+                    ('num_provided_coarse_chans', ct.c_size_t),
                     ('provided_coarse_chan_indices', ct.POINTER(ct.c_size_t)),
 
                     ('coarse_chan_width_hz', ct.c_uint32),

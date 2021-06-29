@@ -10,7 +10,7 @@ class PymwalibError(Exception):
     """Base class for other exceptions"""
     pass
 
-class PymwalibMwalibVersionNotCompatible(PymwalibError):
+class PymwalibMwalibVersionNotCompatibleError(PymwalibError):
     """Raised when mwalib is not a compatible version"""
     pass
 
@@ -70,23 +70,23 @@ class PymwalibVoltageContextDisplayError(PymwalibError):
     """Raised when call to C mwalib_voltage_context_display fails"""
     pass
 
-class PymwalibVoltageContextReadFileException(PymwalibError):
+class PymwalibVoltageContextReadFileError(PymwalibError):
     """Raised when call to C mwalib_voltage_context_read_file fails"""
     pass
 
-class PymwalibVoltageContextReadSecondException(PymwalibError):
+class PymwalibVoltageContextReadSecondError(PymwalibError):
     """Raised when call to C mwalib_voltage_context_read_second fails"""
     pass
 
-class PymwalibCorrelatorContextReadByBaselineException(PymwalibError):
+class PymwalibCorrelatorContextReadByBaselineError(PymwalibError):
     """Raised when call to C mwalib_correlator_context_read_by_baseline fails"""
     pass
 
-class PymwalibCorrelatorContextReadByFrequencyException(PymwalibError):
+class PymwalibCorrelatorContextReadByFrequencyError(PymwalibError):
     """Raised when call to C mwalib_correlator_context_read_by_frequency fails"""
     pass
 
-class PymwalibNoDataForTimestepAndCoarseChannel(PymwalibError):
+class PymwalibNoDataForTimestepAndCoarseChannelError(PymwalibError):
     """Raised when call to C mwalib functions that read data ask for data at a timestep/coarse channel where
     there is no data"""
     pass

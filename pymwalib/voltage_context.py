@@ -9,7 +9,7 @@
 import numpy.ctypeslib as npct
 from .mwalib import CVoltageContextS,ct,mwalib_library,create_string_buffer,CVoltageMetadataS,MWALIB_SUCCESS,MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN
 from .common import ERROR_MESSAGE_LEN,MWAVersion
-from .errors import PymwalibVoltageMetadataGetError,PymwalibVoltageContextNewError,PymwalibCorrelatorContextDisplayError,PymwalibNoDataForTimestepAndCoarseChannel,PymwalibVoltageContextReadFileException,PymwalibVoltageContextReadSecondException
+from .errors import PymwalibVoltageMetadataGetError,PymwalibVoltageContextNewError,PymwalibCorrelatorContextDisplayError,PymwalibNoDataForTimestepAndCoarseChannelError,PymwalibVoltageContextReadFileError,PymwalibVoltageContextReadSecondError
 from .coarse_channel import CoarseChannel
 from .metafits_metadata import MetafitsMetadata
 from .timestep import TimeStep
@@ -67,8 +67,8 @@ class VoltageContext:
         self.common_good_duration_ms = c_object.common_good_duration_ms
         self.common_good_bandwidth_hz = c_object.common_good_bandwidth_hz
 
-        self.num_provided_timestep_indices = c_object.num_provided_timestep_indices
-        self.num_provided_coarse_chan_indices = c_object.num_provided_coarse_chan_indices
+        self.num_provided_timesteps = c_object.num_provided_timesteps
+        self.num_provided_coarse_chans = c_object.num_provided_coarse_chans
 
         self.coarse_chan_width_hz: int = c_object.coarse_chan_width_hz
         self.fine_chan_width_hz: int = c_object.fine_chan_width_hz
@@ -83,8 +83,38 @@ class VoltageContext:
         self.data_file_header_size_bytes: int = c_object.data_file_header_size_bytes
         self.expected_voltage_data_file_size_bytes: int = c_object.expected_voltage_data_file_size_bytes
 
+        # Common timesteps
+        self.common_timestep_indices = []
+        for i in range(self.num_common_timesteps):
+            self.common_timestep_indices.append(c_object.common_timestep_indices[i])
+
+        # Common coarse chans
+        self.common_coarse_chans = []
+        for i in range(self.num_common_coarse_chans):
+            self.common_coarse_chans.append(c_object.common_coarse_chan_indices[i])
+
+        # Common Good timesteps
+        self.common_good_timestep_indices = []
+        for i in range(self.num_common_good_timesteps):
+            self.common_good_timestep_indices.append(c_object.common_good_timestep_indices[i])
+
+        # Common Good coarse chans
+        self.common_good_coarse_chans = []
+        for i in range(self.num_common_good_coarse_chans):
+            self.common_good_coarse_chans.append(c_object.common_good_coarse_chan_indices[i])
+
+        # Provided timesteps
+        self.provided_timestep_indices = []
+        for i in range(self.num_provided_timesteps):
+            self.provided_timestep_indices.append(c_object.provided_timestep_indices[i])
+
+        # Provided coarse chans
+        self.provided_coarse_chans = []
+        for i in range(self.num_provided_coarse_chans):
+            self.provided_coarse_chans.append(c_object.provided_coarse_chan_indices[i])
+
         # Now Get metafits metadata
-        self.metafits_metadata: MetafitsMetadata = MetafitsMetadata(None, None, self._voltage_context_object)
+        self.metafits_context: MetafitsMetadata = MetafitsMetadata(None, None, self._voltage_context_object)
 
         # Populate coarse channels
         self.coarse_channels = CoarseChannel.get_correlator_or_voltage_coarse_channels(c_object_ptr.contents)
@@ -155,9 +185,9 @@ class VoltageContext:
          if ret_val == MWALIB_SUCCESS:
              return npct.as_array(buffer, shape=(byte_buffer_len,))
          elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-             raise PymwalibNoDataForTimestepAndCoarseChannel(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
+             raise PymwalibNoDataForTimestepAndCoarseChannelError(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
          else:
-             raise PymwalibVoltageContextReadFileException(f"Error reading data: "
+             raise PymwalibVoltageContextReadFileError(f"Error reading data: "
                                                          f"{error_message.decode('utf-8').rstrip()}")
 
 
@@ -182,9 +212,9 @@ class VoltageContext:
          if ret_val == MWALIB_SUCCESS:
              return npct.as_array(buffer, shape=(byte_buffer_len,))
          elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-             raise PymwalibNoDataForTimestepAndCoarseChannel(f"Not all data exists for {gps_second_start} (for {gps_second_count} sec) and coarse channel {coarse_chan_index}")
+             raise PymwalibNoDataForTimestepAndCoarseChannelError(f"Not all data exists for {gps_second_start} (for {gps_second_count} sec) and coarse channel {coarse_chan_index}")
          else:
-             raise PymwalibVoltageContextReadSecondException(f"Error reading data: "
+             raise PymwalibVoltageContextReadSecondError(f"Error reading data: "
                                                              f"{error_message.decode('utf-8').rstrip()}")
 
     def __repr__(self):
@@ -194,8 +224,8 @@ class VoltageContext:
                f"Num timesteps                         : {self.num_timesteps}\n" \
                f"Tmestep duration (ms)                 : {self.timestep_duration_ms} ms\n" \
                f"Num coarse channels                   : {self.num_coarse_chans}\n" \
-               f"num_provided_timestep_indices         : {self.num_provided_timestep_indices}\n" \
-               f"num_provided_coarse_chan_indices      : {self.num_provided_coarse_chan_indices}\n" \
+               f"num_provided_timestep_indices         : {self.num_provided_timesteps}\n" \
+               f"num_provided_coarse_chan_indices      : {self.num_provided_coarse_chans}\n" \
                f"(common) Start time (UNIX)            : {float(self.common_start_unix_time_ms) / 1000.}\n" \
                f"(common) End time (UNIX)              : {float(self.common_end_unix_time_ms) / 1000.}\n" \
                f"(common) Start time (GPS)             : {float(self.common_start_gps_time_ms) / 1000.}\n" \

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# pymwalib examples/example02 - utilise all cores to sum the hdus and compare against single threaded
+# pymwalib examples/sum-gpuboxes - utilise all cores to sum the hdus and compare against single threaded
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ import os
 from joblib import Parallel, delayed
 from pymwalib.correlator_context import CorrelatorContext
 from pymwalib.version import check_mwalib_version
-from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannel
+from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
 import time
 
 
@@ -24,16 +24,16 @@ def sum_by_baseline_task(metafits_filename: str, gpubox_filenames: list, coarse_
     chan_sum = 0.
 
     with CorrelatorContext(metafits_filename, gpubox_filenames) as context:
-        if coarse_chan_index < context.correlator_metadata.num_coarse_chans:
-            print(f"sum_by_baseline_task: Summing {context.correlator_metadata.num_timesteps} timesteps "
+        if coarse_chan_index < context.num_coarse_chans:
+            print(f"sum_by_baseline_task: Summing {context.num_timesteps} timesteps "
                   f"and coarse channel index {coarse_chan_index}...")
 
-            for t in range(0, context.correlator_metadata.num_timesteps):
+            for t in range(0, context.num_timesteps):
                 try:
                     data = context.read_by_frequency(t, coarse_chan_index)
                     chan_sum += np.sum(data, dtype=np.float64)
 
-                except PymwalibNoDataForTimestepAndCoarseChannel:
+                except PymwalibNoDataForTimestepAndCoarseChannelError:
                     pass
 
                 except Exception as e:
@@ -47,22 +47,21 @@ def sum_by_baseline_slow(metafits_filename: str, gpubox_filenames: list) -> floa
     total_sum = 0.
 
     with CorrelatorContext(metafits_filename, gpubox_filenames) as context:
-        for coarse_chan_index in range(0, context.correlator_metadata.num_coarse_chans):
-            if coarse_chan_index < context.correlator_metadata.num_coarse_chans:
-                print(f"sum_by_baseline_slow: Summing {context.correlator_metadata.num_timesteps} timesteps "
-                      f"and coarse channel index {coarse_chan_index}...")
-                for timestep_index in range(0, context.correlator_metadata.num_timesteps):
-                    try:
-                        data = context.read_by_baseline(timestep_index,
-                                                        coarse_chan_index)
-                        total_sum += np.sum(data, dtype=np.float64)
+        for coarse_chan_index in range(0, context.num_coarse_chans):
+            print(f"sum_by_baseline_slow: Summing {context.num_timesteps} timesteps "
+                  f"and coarse channel index {coarse_chan_index}...")
+            for timestep_index in range(0, context.num_timesteps):
+                try:
+                    data = context.read_by_baseline(timestep_index,
+                                                    coarse_chan_index)
+                    total_sum += np.sum(data, dtype=np.float64)
 
-                    except PymwalibNoDataForTimestepAndCoarseChannel:
-                        pass
+                except PymwalibNoDataForTimestepAndCoarseChannelError:
+                    pass
 
-                    except Exception as e:
-                        print(f"Error: {e}")
-                        exit(-1)
+                except Exception as e:
+                    print(f"Error: {e}")
+                    exit(-1)
 
     return total_sum
 

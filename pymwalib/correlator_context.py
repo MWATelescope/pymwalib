@@ -11,7 +11,7 @@ import ctypes as ct
 from .mwalib import CCorrelatorContextS, CCorrelatorMetadataS, mwalib_library,create_string_buffer,MWALIB_SUCCESS,MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN
 from .coarse_channel import CoarseChannel
 from .common import ERROR_MESSAGE_LEN, MWAVersion
-from .errors import PymwalibCorrelatorContextNewError,PymwalibCorrelatorContextDisplayError,PymwalibNoDataForTimestepAndCoarseChannel,PymwalibCorrelatorContextReadByBaselineException,PymwalibCorrelatorContextReadByFrequencyException, PymwalibCorrelatorMetadataGetError
+from .errors import PymwalibCorrelatorContextNewError,PymwalibCorrelatorContextDisplayError,PymwalibNoDataForTimestepAndCoarseChannelError,PymwalibCorrelatorContextReadByBaselineError,PymwalibCorrelatorContextReadByFrequencyError, PymwalibCorrelatorMetadataGetError
 from .metafits_metadata import MetafitsMetadata
 from .timestep import TimeStep
 from .version import check_mwalib_version
@@ -46,11 +46,11 @@ class CorrelatorContext:
         # Populate all the fields
         self.mwa_version: MWAVersion = MWAVersion(c_object.mwa_version)
 
-        self.num_timesteps = c_object.num_timesteps
-        self.num_coarse_chans = c_object.num_coarse_chans
+        self.num_timesteps: int = c_object.num_timesteps
+        self.num_coarse_chans: int = c_object.num_coarse_chans
 
-        self.num_common_timesteps = c_object.num_common_timesteps
-        self.num_common_coarse_chans = c_object.num_common_coarse_chans
+        self.num_common_timesteps: int = c_object.num_common_timesteps
+        self.num_common_coarse_chans: int = c_object.num_common_coarse_chans
         self.common_start_unix_time_ms = c_object.common_start_unix_time_ms
         self.common_end_unix_time_ms = c_object.common_end_unix_time_ms
         self.common_start_gps_time_ms = c_object.common_start_gps_time_ms
@@ -58,8 +58,8 @@ class CorrelatorContext:
         self.common_duration_ms = c_object.common_duration_ms
         self.common_bandwidth_hz = c_object.common_bandwidth_hz
 
-        self.num_common_good_timesteps = c_object.num_common_good_timesteps
-        self.num_common_good_coarse_chans = c_object.num_common_good_coarse_chans
+        self.num_common_good_timesteps: int = c_object.num_common_good_timesteps
+        self.num_common_good_coarse_chans: int = c_object.num_common_good_coarse_chans
         self.common_good_start_unix_time_ms = c_object.common_good_start_unix_time_ms
         self.common_good_end_unix_time_ms = c_object.common_good_end_unix_time_ms
         self.common_good_start_gps_time_ms = c_object.common_good_start_gps_time_ms
@@ -67,15 +67,45 @@ class CorrelatorContext:
         self.common_good_duration_ms = c_object.common_good_duration_ms
         self.common_good_bandwidth_hz = c_object.common_good_bandwidth_hz
 
-        self.num_provided_timestep_indices = c_object.num_provided_timestep_indices
-        self.num_provided_coarse_chan_indices = c_object.num_provided_coarse_chan_indices
+        self.num_provided_timesteps: int = c_object.num_provided_timesteps
+        self.num_provided_coarse_chans: int = c_object.num_provided_coarse_chans
 
         self.num_timestep_coarse_chan_bytes: int = c_object.num_timestep_coarse_chan_bytes
         self.num_timestep_coarse_chan_floats: int = c_object.num_timestep_coarse_chan_floats
         self.num_gpubox_files: int = c_object.num_gpubox_files
 
+        # Common timesteps
+        self.common_timestep_indices = []
+        for i in range(self.num_common_timesteps):
+            self.common_timestep_indices.append(c_object.common_timestep_indices[i])
+
+        # Common coarse chans
+        self.common_coarse_chan_indices = []
+        for i in range(self.num_common_coarse_chans):
+            self.common_coarse_chan_indices.append(c_object.common_coarse_chan_indices[i])
+
+        # Common Good timesteps
+        self.common_good_timestep_indices = []
+        for i in range(self.num_common_good_timesteps):
+            self.common_good_timestep_indices.append(c_object.common_good_timestep_indices[i])
+
+        # Common Good coarse chans
+        self.common_good_coarse_chan_indices = []
+        for i in range(self.num_common_good_coarse_chans):
+            self.common_good_coarse_chan_indices.append(c_object.common_good_coarse_chan_indices[i])
+
+        # Provided timesteps
+        self.provided_timestep_indices = []
+        for i in range(self.num_provided_timesteps):
+            self.provided_timestep_indices.append(c_object.provided_timestep_indices[i])
+
+        # Provided coarse chans
+        self.provided_coarse_chan_indices = []
+        for i in range(self.num_provided_coarse_chans):
+            self.provided_coarse_chan_indices.append(c_object.provided_coarse_chan_indices[i])
+
         # Now Get metafits context
-        self.metafits_metadata: MetafitsMetadata = MetafitsMetadata(None, self._correlator_context_object, None)
+        self.metafits_context: MetafitsMetadata = MetafitsMetadata(None, self._correlator_context_object, None)
 
         # Populate coarse channels
         self.coarse_channels = CoarseChannel.get_correlator_or_voltage_coarse_channels(c_object_ptr.contents)
@@ -143,9 +173,9 @@ class CorrelatorContext:
          if ret_val == MWALIB_SUCCESS:
              return npct.as_array(buffer, shape=(self.num_timestep_coarse_chan_floats,))
          elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-             raise PymwalibNoDataForTimestepAndCoarseChannel(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
+             raise PymwalibNoDataForTimestepAndCoarseChannelError(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
          else:
-             raise PymwalibCorrelatorContextReadByBaselineException(f"Error reading data: "
+             raise PymwalibCorrelatorContextReadByBaselineError(f"Error reading data: "
                                                   f"{error_message.decode('utf-8').rstrip()}")
 
 
@@ -165,9 +195,9 @@ class CorrelatorContext:
         if ret_val == MWALIB_SUCCESS:
             return npct.as_array(buffer, shape=(self.num_timestep_coarse_chan_floats,))
         elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-            raise PymwalibNoDataForTimestepAndCoarseChannel(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
+            raise PymwalibNoDataForTimestepAndCoarseChannelError(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
         else:
-            raise PymwalibCorrelatorContextReadByFrequencyException(f"Error reading data: "
+            raise PymwalibCorrelatorContextReadByFrequencyError(f"Error reading data: "
                                                                    f"{error_message.decode('utf-8').rstrip()}")
     def __repr__(self):
         """Returns a representation of the class"""
@@ -175,8 +205,8 @@ class CorrelatorContext:
                f"MWA Version                           : {MWAVersion(self.mwa_version).name}\n" \
                f"Num timesteps                         : {self.num_timesteps}\n" \
                f"Num coarse channels                   : {self.num_coarse_chans}\n" \
-               f"num_provided_timestep_indices         : {self.num_provided_timestep_indices}\n" \
-               f"num_provided_coarse_chan_indices      : {self.num_provided_coarse_chan_indices}\n" \
+               f"num_provided_timestep_indices         : {self.num_provided_timesteps}\n" \
+               f"num_provided_coarse_chan_indices      : {self.num_provided_coarse_chans}\n" \
                f"(common) Start time (UNIX)            : {float(self.common_start_unix_time_ms) / 1000.}\n" \
                f"(common) End time (UNIX)              : {float(self.common_end_unix_time_ms) / 1000.}\n" \
                f"(common) Start time (GPS)             : {float(self.common_start_gps_time_ms) / 1000.}\n" \

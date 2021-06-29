@@ -8,11 +8,10 @@
 #
 import ctypes as ct
 from .mwalib import CMetafitsContextS,mwalib_library,create_string_buffer
-from .common import ERROR_MESSAGE_LEN, MWAMode, MWAVersion, GeometricDelaysApplied
+from .common import ERROR_MESSAGE_LEN, MWAVersion
 from .errors import PymwalibMetafitsContextNewError,PymwalibMetafitsContextDisplayError
 from .metafits_metadata import MetafitsMetadata
 from .version import check_mwalib_version
-from datetime import datetime
 
 
 class MetafitsContext(MetafitsMetadata):
@@ -49,7 +48,7 @@ class MetafitsContext(MetafitsMetadata):
 
             error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
             if mwalib_library.mwalib_metafits_context_new(
-                m, mwa_version, ct.byref(self._metafits_context_object), error_message, ERROR_MESSAGE_LEN) != 0:
+                m, mwa_version.value, ct.byref(self._metafits_context_object), error_message, ERROR_MESSAGE_LEN) != 0:
                 raise PymwalibMetafitsContextNewError(f"Error creating metafits context object: "
                                              f"{error_message.decode('utf-8').rstrip()}")
         else:
