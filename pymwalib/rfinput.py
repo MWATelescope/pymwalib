@@ -6,10 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import ctypes as ct
-from .mwalib import create_string_buffer, mwalib_library, CRFInputS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
-from .common import ERROR_MESSAGE_LEN
-from .errors import PymwalibRFInputsGetError
+from .mwalib import CRFInputS, CMetafitsMetadataS
 
 
 class RFInput:
@@ -78,46 +75,28 @@ class RFInput:
                f"rec_slot_number: {self.rec_slot_number})"
 
     @staticmethod
-    def get_rfinputs(metafits_context: ct.POINTER(CMetafitsContextS),
-                     correlator_context: ct.POINTER(CCorrelatorContextS),
-                     voltage_context: ct.POINTER(CVoltageContextS)) -> []:
+    def get_rf_inputs(metafits_metadata: CMetafitsMetadataS) -> []:
         """Retrieve all of the rf_input metadata and populate a list of rf_inputs."""
         rf_inputs = []
-        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
-        c_array_ptr = ct.POINTER(CRFInputS)()
-        c_len_ptr = ct.c_size_t(0)
+        for i in range(0, metafits_metadata.num_rf_inputs):
+            obj: CRFInputS = metafits_metadata.rf_inputs[i]
 
-        if mwalib_library.mwalib_rfinputs_get(metafits_context,
-                                      correlator_context,
-                                      voltage_context,
-                                      ct.byref(c_array_ptr),
-                                      ct.byref(c_len_ptr),
-                                      error_message,
-                                      ERROR_MESSAGE_LEN) != 0:
-            # Error
-            raise PymwalibRFInputsGetError(f"Error getting rf_inputs object: "
-                                          f"{error_message.decode('utf-8').rstrip()}")
-        else:
-            for i in range(0, c_len_ptr.value):
-                # Populate all the fields
-                rf_inputs.append(RFInput(i,
-                                         c_array_ptr[i].input,
-                                         c_array_ptr[i].ant,
-                                         c_array_ptr[i].tile_id,
-                                         c_array_ptr[i].tile_name.decode("utf-8"),
-                                         c_array_ptr[i].pol.decode("utf-8"),
-                                         c_array_ptr[i].electrical_length_m,
-                                         c_array_ptr[i].north_m,
-                                         c_array_ptr[i].east_m,
-                                         c_array_ptr[i].height_m,
-                                         c_array_ptr[i].vcs_order,
-                                         c_array_ptr[i].subfile_order,
-                                         c_array_ptr[i].flagged,
-                                         c_array_ptr[i].rec_number,
-                                         c_array_ptr[i].rec_slot_number))
+            # Populate all the fields
+            rf_inputs.append(RFInput(i,
+                                     obj.input,
+                                     obj.ant,
+                                     obj.tile_id,
+                                     obj.tile_name.decode("utf-8"),
+                                     obj.pol.decode("utf-8"),
+                                     obj.electrical_length_m,
+                                     obj.north_m,
+                                     obj.east_m,
+                                     obj.height_m,
+                                     obj.vcs_order,
+                                     obj.subfile_order,
+                                     obj.flagged,
+                                     obj.rec_number,
+                                     obj.rec_slot_number))
 
-            # We're now finished with the C memory, so free it
-            mwalib_library.mwalib_rfinputs_free(c_array_ptr, c_len_ptr.value)
-
-            return rf_inputs
+        return rf_inputs

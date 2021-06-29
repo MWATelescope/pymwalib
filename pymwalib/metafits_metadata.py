@@ -11,7 +11,11 @@ from datetime import datetime
 from .mwalib import mwalib_library,CMetafitsMetadataS, CMetafitsContextS,CCorrelatorContextS,CVoltageContextS,create_string_buffer
 from .common import ERROR_MESSAGE_LEN, MWAMode, GeometricDelaysApplied
 from .errors import PymwalibMetafitsMetadataGetError
-
+from .antenna import Antenna
+from .baseline import Baseline
+from .rfinput import RFInput
+from .coarse_channel import CoarseChannel
+from .timestep import TimeStep
 
 class MetafitsMetadata:
     def __init__(self,
@@ -90,10 +94,28 @@ class MetafitsMetadata:
             self.centre_freq_hz: int = c_object.centre_freq_hz
             self.metafits_filename: str = c_object.metafits_filename.decode("utf-8")
 
+            # Populate rf_inputs
+            self.rf_inputs = RFInput.get_rf_inputs(c_object)
+
+            # Populate antennas
+            self.antennas = Antenna.get_antennas(c_object, self.rf_inputs)
+
+            # Populate baselines
+            self.baselines = Baseline.get_baselines(c_object)
+
+            # Populate timesteps
+            self.metafits_timesteps = TimeStep.get_metafits_timesteps(c_object)
+
+            # Populate coarse channels
+            self.metafits_coarse_chans = CoarseChannel.get_metafits_coarse_channels(c_object)
+
             # We're now finished with the C memory, so free it
             mwalib_library.mwalib_metafits_metadata_free(c_object)
 
     def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+
+    def __str__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
                f"Obs ID                                : {self.obs_id}\n" \

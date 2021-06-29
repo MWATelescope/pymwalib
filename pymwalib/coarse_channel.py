@@ -7,9 +7,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import ctypes as ct
-from .mwalib import create_string_buffer, mwalib_library, CCoarseChannelS, CCorrelatorContextS, CMetafitsContextS, CVoltageContextS
-from .common import ERROR_MESSAGE_LEN
 from .errors import PymwalibCoarseChannelsGetError
+from .mwalib import CCoarseChannelS, CMetafitsMetadataS, CCorrelatorMetadataS, CVoltageMetadataS
 
 
 class CoarseChannel:
@@ -57,83 +56,41 @@ class CoarseChannel:
                f"Channel end MHz: {float(self.chan_end_hz) / 1000000.})"
 
     @staticmethod
-    def get_metafits_coarse_channels(metafits_context: ct.POINTER(CMetafitsContextS),
-                                     correlator_context: ct.POINTER(CCorrelatorContextS),
-                                     voltage_context: ct.POINTER(CVoltageContextS)) -> []:
-        """Retrieve all of the coarse_channel metadata and populate a list of metafits coarse_channels."""
+    def get_metafits_coarse_channels(metafits_metadata: CMetafitsMetadataS) -> []:
+        """Retrieve all of the coarse_channel metadata and populate a list of coarse_channels."""
         coarse_channels = []
-        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
-        c_array_ptr = ct.POINTER(CCoarseChannelS)()
-        c_len_ptr = ct.c_size_t(0)
+        for i in range(0, metafits_metadata.num_metafits_coarse_chans):
+            obj: CCoarseChannelS = metafits_metadata.metafits_coarse_chans[i]
 
-        if metafits_context is not None or correlator_context is not None or voltage_context is not None:
-            if mwalib_library.mwalib_metafits_coarse_channels_get(metafits_context,
-                                                          correlator_context,
-                                                          voltage_context,
-                                                          ct.byref(c_array_ptr),
-                                                          ct.byref(c_len_ptr),
-                                                          error_message,
-                                                          ERROR_MESSAGE_LEN) != 0:
-                # Error
-                raise PymwalibCoarseChannelsGetError(f"Error getting metafits coarse_channel object: "
-                                                     f"{error_message.decode('utf-8').rstrip()}")
-        else:
-            raise PymwalibCoarseChannelsGetError(f"Error getting metafits coarse_channel object: "
-                                                 f"neither metafits, correlator nor voltage context provided.")
-
-        for i in range(0, c_len_ptr.value):
             # Populate all the fields
             coarse_channels.append(CoarseChannel(i,
-                                                 c_array_ptr[i].corr_chan_number,
-                                                 c_array_ptr[i].rec_chan_number,
-                                                 c_array_ptr[i].gpubox_number,
-                                                 c_array_ptr[i].chan_width_hz,
-                                                 c_array_ptr[i].chan_start_hz,
-                                                 c_array_ptr[i].chan_centre_hz,
-                                                 c_array_ptr[i].chan_end_hz, ))
-
-        # We're now finished with the C memory, so free it
-        mwalib_library.mwalib_coarse_channels_free(c_array_ptr, c_len_ptr.value)
+                                                 obj.corr_chan_number,
+                                                 obj.rec_chan_number,
+                                                 obj.gpubox_number,
+                                                 obj.chan_width_hz,
+                                                 obj.chan_start_hz,
+                                                 obj.chan_centre_hz,
+                                                 obj.chan_end_hz, ))
 
         return coarse_channels
 
     @staticmethod
-    def get_coarse_channels(correlator_context: ct.POINTER(CCorrelatorContextS),
-                            voltage_context: ct.POINTER(CVoltageContextS)) -> []:
+    def get_correlator_or_voltage_coarse_channels(correlator_or_voltage_metadata) -> []:
         """Retrieve all of the coarse_channel metadata and populate a list of coarse_channels."""
         coarse_channels = []
-        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
-        c_array_ptr = ct.POINTER(CCoarseChannelS)()
-        c_len_ptr = ct.c_size_t(0)
+        for i in range(0, correlator_or_voltage_metadata.num_coarse_chans):
+            obj: CCoarseChannelS = correlator_or_voltage_metadata.coarse_chans[i]
 
-        if correlator_context is not None or voltage_context is not None:
-             if mwalib_library.mwalib_coarse_channels_get(correlator_context,
-                                                  voltage_context,
-                                                  ct.byref(c_array_ptr),
-                                                  ct.byref(c_len_ptr),
-                                                  error_message,
-                                                  ERROR_MESSAGE_LEN) != 0:
-                # Error
-                raise PymwalibCoarseChannelsGetError(f"Error getting coarse_channel object: "
-                                                    f"{error_message.decode('utf-8').rstrip()}")
-        else:
-            raise PymwalibCoarseChannelsGetError(f"Error getting coarse_channel object: "
-                                                f"neither correlator nor voltage context provided.")
-
-        for i in range(0, c_len_ptr.value):
             # Populate all the fields
             coarse_channels.append(CoarseChannel(i,
-                                                 c_array_ptr[i].corr_chan_number,
-                                                 c_array_ptr[i].rec_chan_number,
-                                                 c_array_ptr[i].gpubox_number,
-                                                 c_array_ptr[i].chan_width_hz,
-                                                 c_array_ptr[i].chan_start_hz,
-                                                 c_array_ptr[i].chan_centre_hz,
-                                                 c_array_ptr[i].chan_end_hz,))
-
-        # We're now finished with the C memory, so free it
-        mwalib_library.mwalib_coarse_channels_free(c_array_ptr, c_len_ptr.value)
+                                                 obj.corr_chan_number,
+                                                 obj.rec_chan_number,
+                                                 obj.gpubox_number,
+                                                 obj.chan_width_hz,
+                                                 obj.chan_start_hz,
+                                                 obj.chan_centre_hz,
+                                                 obj.chan_end_hz, ))
 
         return coarse_channels

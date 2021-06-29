@@ -7,9 +7,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import ctypes as ct
-from .mwalib import create_string_buffer, mwalib_library, CAntennaS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS
-from .common import ERROR_MESSAGE_LEN
-from .errors import PymwalibAntennasGetError
+from .mwalib import  CAntennaS, CMetafitsMetadataS
 from .rfinput import RFInput
 
 class Antenna:
@@ -64,42 +62,24 @@ class Antenna:
                f"Height: {self.height_m} m)"
 
     @staticmethod
-    def get_antennas(metafits_context: ct.POINTER(CMetafitsContextS),
-                     correlator_context: ct.POINTER(CCorrelatorContextS),
-                     voltage_context: ct.POINTER(CVoltageContextS),
+    def get_antennas(metafits_metadata: CMetafitsMetadataS,
                      rf_inputs: []) -> []:
         """Retrieve all of the antenna metadata and populate a list of antennas."""
         antennas = []
-        error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
-        c_array_ptr = ct.POINTER(CAntennaS)()
-        c_len_ptr = ct.c_size_t(0)
+        for i in range(0, metafits_metadata.num_ants):
+            obj: CAntennaS = metafits_metadata.antennas[i]
 
-        if mwalib_library.mwalib_antennas_get(metafits_context,
-                                      correlator_context,
-                                      voltage_context,
-                                      ct.byref(c_array_ptr),
-                                      ct.byref(c_len_ptr),
-                                      error_message,
-                                      ERROR_MESSAGE_LEN) != 0:
-            # Error
-            raise PymwalibAntennasGetError(f"Error getting antennas object: "
-                                          f"{error_message.decode('utf-8').rstrip()}")
-        else:
-            for i in range(0, c_len_ptr.value):
-                # Populate all the fields
-                antennas.append(Antenna(i,
-                                 c_array_ptr[i].ant,
-                                 c_array_ptr[i].tile_id,
-                                 c_array_ptr[i].tile_name.decode("utf-8"),
-                                 rf_inputs[c_array_ptr[i].rfinput_x],
-                                 rf_inputs[c_array_ptr[i].rfinput_y],
-                                 c_array_ptr[i].electrical_length_m,
-                                 c_array_ptr[i].north_m,
-                                 c_array_ptr[i].east_m,
-                                 c_array_ptr[i].height_m))
+            # Populate all the fields
+            antennas.append(Antenna(i,
+                             obj.ant,
+                             obj.tile_id,
+                             obj.tile_name.decode("utf-8"),
+                             rf_inputs[obj.rfinput_x],
+                             rf_inputs[obj.rfinput_y],
+                             obj.electrical_length_m,
+                             obj.north_m,
+                             obj.east_m,
+                             obj.height_m))
 
-            # We're now finished with the C memory, so free it
-            mwalib_library.mwalib_antennas_free(c_array_ptr, c_len_ptr.value)
-
-            return antennas
+        return antennas

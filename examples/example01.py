@@ -42,28 +42,25 @@ if __name__ == "__main__":
         print("\n\n\nTesting Context metafits metadata:")
         print(f"{repr(context.metafits_metadata)}")
 
-        print("\n\n\nTesting Context correlator metadata:")
-        print(f"{repr(context.correlator_metadata)}")
-
         # Test antennas
         print("\n\n\nTesting Antennas:")
-        for a in context.antennas:
+        for a in context.metafits_metadata.antennas:
             print(repr(a))
 
         # Test baselines
         print("\n\n\nTesting first 5 baselines:")
         for c in range(0, 5):
-             print(repr(context.baselines[c]))
+             print(repr(context.metafits_metadata.baselines[c]))
+
+        # Test rfinputs
+        print("\n\n\nTesting RF Inputs:")
+        for r in context.metafits_metadata.rf_inputs:
+            print(repr(r))
 
         # Test coarse channels
         print("\n\n\nTesting Coarse channels:")
         for c in context.coarse_channels:
             print(repr(c))
-
-        # Test rfinputs
-        print("\n\n\nTesting RF Inputs:")
-        for r in context.rfinputs:
-            print(repr(r))
 
         # Test timesteps
         print("\n\n\nTesting Timesteps:")
@@ -75,14 +72,14 @@ if __name__ == "__main__":
         context.display()
 
         # Sum the data by baseline
-        print(f"\n\n\nSumming {context.correlator_metadata.num_timesteps} timesteps "
-              f"and {context.correlator_metadata.num_coarse_chans} coarse channels...")
+        print(f"\n\n\nSumming {context.num_timesteps} timesteps "
+              f"and {context.num_coarse_chans} coarse channels...")
 
         total_sum = 0
-        for timestep_index in range(0, context.correlator_metadata.num_timesteps):
+        for timestep_index in range(0, context.num_timesteps):
              this_sum = 0
 
-             for coarse_chan_index in range(0, context.correlator_metadata.num_coarse_chans):
+             for coarse_chan_index in range(0, context.num_coarse_chans):
                  try:
                      data = context.read_by_baseline(timestep_index,
                                                      coarse_chan_index)
@@ -99,10 +96,10 @@ if __name__ == "__main__":
 
         # Sum the data by frequency
         total_sum = 0
-        for timestep_index in range(0, context.correlator_metadata.num_timesteps):
+        for timestep_index in range(0, context.num_timesteps):
              this_sum = 0
 
-             for coarse_chan_index in range(0, context.correlator_metadata.num_coarse_chans):
+             for coarse_chan_index in range(0, context.num_coarse_chans):
                  try:
                      data = context.read_by_frequency(timestep_index,
                                                       coarse_chan_index)
