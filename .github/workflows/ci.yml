@@ -30,7 +30,7 @@ jobs:
         run: |
           cd /tmp; \
           mkdir libmwalib; \
-          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.8.2/mwalib-v0.8.2-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
+          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.8.3/mwalib-v0.8.3-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
           tar -xzf libmwalib.tar.gz -C libmwalib; \
           cd libmwalib; \
           sudo cp libmwalib.so /usr/local/lib/.; \

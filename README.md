@@ -2,9 +2,8 @@
 ![Tests](https://github.com/MWATelescope/pymwalib/workflows/Code%20Coverage/badge.svg)
 [![codecov](https://codecov.io/gh/MWATelescope/pymwalib/branch/master/graph/badge.svg)](https://codecov.io/gh/MWATelescope/pymwalib)
 A Python interface for [MWATelescope/mwalib](https://github.com/MWATelescope/mwalib) that provides a simple
-interface for reading MWA raw visibilities and exposing the relevant metadata. pymwalib and mwalib
-both support reading data produced by the existing (legacy) MWA correlator and the future MWAX
-correlator.
+interface for reading MWA correlator raw visibilities, recombined voltages and exposing the relevant metadata. pymwalib and mwalib
+both support reading data produced by the existing (legacy) MWA and the new MWAX systems.
 
 ## Prerequisites
 * Python >=3.6
@@ -14,12 +13,12 @@ correlator.
 ## Installing mwalib
 * Download the relevant release from [MWATelescope/mwalib github releases](https://github.com/MWATelescope/mwalib/releases)
 ```bash
-$ wget https://github.com/MWATelescope/mwalib/releases/download/v0.3.0/libmwalib-0.3.0-linux_x86_64.tar.gz -O libmwalib-0.3.0-linux_x86_64.tar.gz 
+$ wget https://github.com/MWATelescope/mwalib/releases/download/v0.3.0/libmwalib-0.8.3-linux_x86_64.tar.gz -O libmwalib-0.8.3-linux_x86_64.tar.gz 
 ```
 * Create a directory and extract the libmwalib-X.X.X-linux_x86_64.tar.gz tarball file. (Where X.X.X is the relevant version number).
 ```bash
 $ mkdir -p mwalib
-$ tar -xvf libmwalib-0.3.0-linux_x86_64.tar.gz -C mwalib
+$ tar -xvf libmwalib-0.8.3-linux_x86_64.tar.gz -C mwalib
 ```
 * The next step can be done one of two ways:
   - A) Copy the header and library files into your system `/usr/local/include` and `/usr/local/lib` paths.
@@ -38,7 +37,7 @@ You can install pymwalib via pip. Before doing so, you may want to create a new 
 $ pip install pymwalib
 ```
 
-## Build pymwalib from source
+## OR Build pymwalib from source
 ### Clone this repository
 * Clone master or a specific release / commit- the example below will clone the master branch.
 ```bash
@@ -70,7 +69,7 @@ $ source env/bin/activate
 ## Test
 * Run one of the example scripts against an MWA observation (to download MWA Observations, please visit the [MWA ASVO](https://asvo.mwatelescope.org) data portal).
 ```bash
-(env)$ python examples/example01.py -m path_to_metafits.metafits path_to_gpuboxfile01.fits path_to_gpuboxfile02.fits ... 
+(env)$ python examples/print-context.py -m path_to_metafits.metafits path_to_gpuboxfile01.fits path_to_gpuboxfile02.fits ... 
 ```
 
 ## Docker
@@ -83,6 +82,6 @@ $ docker build . -t pymwalib:latest
 ### Run the container
 One way to launch the container is to use docker run, for example:
 ```
-docker run --name my_pymwalib --volume=/host_data:/data --entrypoint="" --rm=true pymwalib:latest python /pymwalib/examples/example01.py -m /data/1101503312.metafits /data/1101503312_20141201210818_gpubox01_00.fits /data/1101503312_20141201210818_gpubox02_00.fits 
+docker run --name my_pymwalib --volume=/host_data:/data --entrypoint="" --rm=true pymwalib:latest python /pymwalib/examples/print-context.py -m /data/1101503312.metafits /data/1101503312_20141201210818_gpubox01_00.fits /data/1101503312_20141201210818_gpubox02_00.fits 
 ```
 * This assumes /host_data is a directory on the machine running docker (host) containing the gpubox files and metafits for an observation. 
