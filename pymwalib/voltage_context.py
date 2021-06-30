@@ -109,9 +109,9 @@ class VoltageContext:
             self.provided_timestep_indices.append(c_object.provided_timestep_indices[i])
 
         # Provided coarse chans
-        self.provided_coarse_chans = []
+        self.provided_coarse_chan_indices = []
         for i in range(self.num_provided_coarse_chans):
-            self.provided_coarse_chans.append(c_object.provided_coarse_chan_indices[i])
+            self.provided_coarse_chan_indices.append(c_object.provided_coarse_chan_indices[i])
 
         # Now Get metafits metadata
         self.metafits_context: MetafitsMetadata = MetafitsMetadata(None, None, self._voltage_context_object)
@@ -195,8 +195,7 @@ class VoltageContext:
          """Retrieve multiple seconds of VCS data as a numpy array."""
          error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
-         byte_buffer_len = self.voltage_block_size_bytes * \
-                           self.num_voltage_blocks_per_timestep
+         byte_buffer_len = self.voltage_block_size_bytes * self.num_voltage_blocks_per_second * gps_second_count
 
          byte_buffer_type = ct.c_byte * byte_buffer_len
          buffer = byte_buffer_type()

@@ -12,54 +12,53 @@
 #
 import argparse
 import numpy as np
-import os
 from pymwalib.voltage_context import VoltageContext
 from pymwalib.version import check_mwalib_version
 from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
 import time
 
 
-def sum_task_by_file(context: VoltageContext, coarse_chan_index: int) -> int:
+def sum_by_file(context: VoltageContext, timestep_index:int, coarse_chan_index: int) -> int:
     total_sum = 0
 
-    print(f"sum_task_by_file: Summing {context.num_timesteps} timesteps "
-          f"and coarse channel index {coarse_chan_index}...")
+    start_gpstime_sec = int(context.timesteps[context.provided_timestep_indices[t]].gps_time_ms / 1000)
+    gps_seconds_count = int(context.timestep_duration_ms/ 1000)
+    end_gpstime_sec = start_gpstime_sec + gps_seconds_count
 
-    for t in range(0, context.num_timesteps):
-        try:
-            print(f"summing t:{t} c:{coarse_chan_index}")
-            data = context.read_file(t, coarse_chan_index)
-            total_sum += np.sum(data, dtype=np.long)
+    print(f"...Summing {start_gpstime_sec} to {end_gpstime_sec} ({gps_seconds_count} seconds) and "
+          f"chan: {coarse_chan_index}...", end="")
 
-        except PymwalibNoDataForTimestepAndCoarseChannelError:
-            pass
+    try:
+        data = context.read_file(timestep_index, coarse_chan_index)
+        total_sum = data.sum(dtype=np.int64)
+        print(f"{total_sum}")
 
-        except Exception as e:
-            print(f"Error: {e}")
-            exit(-1)
+    except PymwalibNoDataForTimestepAndCoarseChannelError:
+        pass
+
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(-1)
 
     return total_sum
 
 
-def sum_by_gps_second(metafits_filename: str, voltage_filenames: list) -> int:
+def sum_by_gps_second(context: VoltageContext, gps_start_sec, gps_end_sec, gps_seconds_count, coarse_chan_index: int) -> int:
     total_sum = 0
 
-    with VoltageContext(metafits_filename, voltage_filenames) as context:
-        for coarse_chan_index in range(0, context.num_coarse_chans):
-            print(f"sum_by_gps_second: Summing {context.num_timesteps} timesteps "
-                  f"and coarse channel index {coarse_chan_index}...")
-            for gps_second in range(context.timesteps[0].gps_time_ms / 1000,
-                                    context.timesteps[context.num_timesteps-1].gps_time_ms):
-                try:
-                    data = context.read_second(gps_second, 1, coarse_chan_index)
-                    total_sum += np.sum(data, dtype=np.long)
+    print(f"...Summing {gps_start_sec} to {gps_end_sec} ({gps_seconds_count} seconds) and "
+          f"chan: {coarse_chan_index}...", end="")
+    try:
+        data = context.read_second(gps_start_sec, gps_seconds_count, coarse_chan_index)
+        total_sum = data.sum(dtype=np.int64)
+        print(f"{total_sum}")
 
-                except PymwalibNoDataForTimestepAndCoarseChannelError:
-                    pass
+    except PymwalibNoDataForTimestepAndCoarseChannelError:
+        pass
 
-                except Exception as e:
-                    print(f"Error: {e}")
-                    exit(-1)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(-1)
 
     return total_sum
 
@@ -81,22 +80,31 @@ if __name__ == "__main__":
                         help="Paths to the vcs data files.")
     args = parser.parse_args()
 
-    # fast sum using all cores
-    num_cores = len(os.sched_getaffinity(0)) - 1
-    print(f"Using {num_cores} cores to fast sum all data files...")
-
     context = VoltageContext(args.metafits, args.datafiles)
-    total_sum = 0
+
+    # sum by file
+    print(f"sum_by_file: Summing {context.num_provided_timesteps} timesteps "
+          f"and {context.num_provided_coarse_chans} coarse channels...")
+    total_sum_by_file = 0
     start_time = time.time()
-    for c in context.provided_coarse_chans:
-        total_sum += np.sum(sum_task_by_file(context, c))
+    for t in context.provided_timestep_indices:
+        for c in context.provided_coarse_chan_indices:
+            total_sum_by_file += np.sum(sum_by_file(context, t, c))
     stop_time = time.time()
-    print(f"Sum is: {total_sum} in {stop_time - start_time} seconds.\n")
+    print(f"Sum is: {total_sum_by_file} in {stop_time - start_time} seconds.\n")
 
-    # slow sum restricted to one python process
-    #start_time_slow = time.time()
-    #slow_sum = sum_by_gps_second(args.metafits, args.gpuboxes)
-    #stop_time_slow = time.time()
-    #print(f"Sum is: {slow_sum} in {stop_time_slow - start_time_slow} seconds.")
+    # sum by gps second
+    start_gpstime_sec = int(context.timesteps[context.provided_timestep_indices[0]].gps_time_ms / 1000)
+    end_gpstime_sec = int((
+        context.timesteps[context.provided_timestep_indices[context.num_provided_timesteps - 1]].gps_time_ms +
+        context.timestep_duration_ms) / 1000)
+    gps_second_count = end_gpstime_sec - start_gpstime_sec
 
-
+    print(f"sum_by_gps_second: Summing {context.num_provided_timesteps} timesteps "
+          f"and {context.num_provided_coarse_chans} coarse channels...")
+    total_sum_by_gps = 0
+    start_time = time.time()
+    for c in context.provided_coarse_chan_indices:
+        total_sum_by_gps += sum_by_gps_second(context, start_gpstime_sec, end_gpstime_sec, gps_second_count, c)
+    stop_time = time.time()
+    print(f"Sum is: {total_sum_by_gps} in {stop_time - start_time} seconds.")
