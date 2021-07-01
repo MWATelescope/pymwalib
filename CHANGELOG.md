@@ -2,6 +2,15 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.8.3 01-Jul-2021 (Pre-release)
+
+* Requires mwalib 0.8.3.
+* Major refactoring of classes to be more consisten with mwalib, please see mwalib release notes for changes in the base library.
+  * `CorrelatorContext` and `VoltageContext` classes now have a metafits_context attribute containing the metafits attributes.
+  * Thus lists such as `rf_inputs`, `baselines`, `antennas` are now accessed via the metafits_context.
+  * MetafitsContext now has `metafits_timesteps` and `metafits_coarse_chans` which reflect those provided by the metafits file.
+  * In order to assist users make sense of the data files provided, CorrelatorContext and VoltageContext have `common`, `common_good` and `provided` lists of indices. See [mwalib wiki: Key Concepts](https://github.com/MWATelescope/mwalib/wiki/Key-Concepts) for an explanation of these terms.
+
 ## 0.8.2 14-Jun-2021 (Pre-release)
 
 * Requires mwalib 0.8.2.
