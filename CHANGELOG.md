@@ -2,6 +2,11 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.8.4 15-Jul-2021 (Pre-release)
+
+* Requires mwalib 0.8.4.
+* Bumped version for new mwalib version compatibility.
+
 ## 0.8.3 01-Jul-2021 (Pre-release)
 
 * Requires mwalib 0.8.3.
