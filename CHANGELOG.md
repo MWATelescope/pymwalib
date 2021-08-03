@@ -2,6 +2,14 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.8.7 03-Aug-2021 (Pre-release)
+
+* Requires mwalib 0.8.7.
+* Updated API to match mwalib v0.8.7.
+* Added helper function get_fine_chan_freqs_hz_array to correlator context and voltage context.
+* Added metafits_context.num_metafits_fine_chan_freqs & metafits_context.metafits_fine_chan_freqs_hz, providing a list of sky frequencies for all fine channels.
+* Added metafits_context.volt_fine_chan_width_hz & metafits_context.num_volt_fine_chans_per_coarse to describe the voltage fine channel configuration.
+
 ## 0.8.4 15-Jul-2021 (Pre-release)
 
 * Requires mwalib 0.8.4.

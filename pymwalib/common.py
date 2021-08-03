@@ -10,6 +10,7 @@ import enum
 
 ERROR_MESSAGE_LEN = 1024
 
+
 class MWAVersion(enum.Enum):
     """Enum for MWA version"""
     # MWA correlator(v1.0), having data files without any batch numbers.
@@ -23,6 +24,7 @@ class MWAVersion(enum.Enum):
     # MWAX VCS
     VCSMWAXv2 = 5
 
+
 class VisPol(enum.Enum):
     """Enum representing the four visibility polarisations for MWA"""
     XX = 1
@@ -30,12 +32,14 @@ class VisPol(enum.Enum):
     YX = 3
     YY = 4
 
+
 class GeometricDelaysApplied(enum.Enum):
     """Enum representing the state of Geometric delays applied for this observation"""
     No = 0
     Zenith = 1
     TilePointing = 2
     AzElTracking = 3
+
 
 class MWAMode(enum.Enum):
     """Enum representing the correlator mode"""

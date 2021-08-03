@@ -7,15 +7,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import ctypes as ct
-from .mwalib import CMetafitsContextS,mwalib_library,create_string_buffer
+from .mwalib import CMetafitsContextS, mwalib_library, create_string_buffer
 from .common import ERROR_MESSAGE_LEN, MWAVersion
-from .errors import PymwalibMetafitsContextNewError,PymwalibMetafitsContextDisplayError
+from .errors import PymwalibMetafitsContextNewError, PymwalibMetafitsContextDisplayError
 from .metafits_metadata import MetafitsMetadata
 from .version import check_mwalib_version
 
 
 class MetafitsContext(MetafitsMetadata):
     """Main class to interface with mwalib metafits infomation"""
+
     def __init__(self, metafits_filename: str, mwa_version: MWAVersion):
         """Take metafits and populate this class via mwalib"""
         #
@@ -48,22 +49,22 @@ class MetafitsContext(MetafitsMetadata):
 
             error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
             if mwalib_library.mwalib_metafits_context_new(
-                m, mwa_version.value, ct.byref(self._metafits_context_object), error_message, ERROR_MESSAGE_LEN) != 0:
+                    m, mwa_version.value, ct.byref(self._metafits_context_object), error_message,
+                    ERROR_MESSAGE_LEN) != 0:
                 raise PymwalibMetafitsContextNewError(f"Error creating metafits context object: "
-                                             f"{error_message.decode('utf-8').rstrip()}")
+                                                      f"{error_message.decode('utf-8').rstrip()}")
         else:
-            raise PymwalibMetafitsContextNewError(f"Error creating metafits context object: mwalib.so is not loaded.")
-
+            raise PymwalibMetafitsContextNewError("Error creating metafits context object: mwalib.so is not loaded.")
 
     def display(self):
-         """Displays a human readable summary of the metafits context"""
-         error_message = create_string_buffer(ERROR_MESSAGE_LEN)
+        """Displays a human readable summary of the metafits context"""
+        error_message = create_string_buffer(ERROR_MESSAGE_LEN)
 
-         if mwalib_library.mwalib_metafits_context_display(self._metafits_context_object,
-                                                   error_message,
-                                                   ERROR_MESSAGE_LEN) != 0:
-             raise PymwalibMetafitsContextDisplayError(f"Error calling mwalib_metafits_context_display(): "
-                                                        f"{error_message.decode('utf-8').rstrip()}")
+        if mwalib_library.mwalib_metafits_context_display(self._metafits_context_object,
+                                                          error_message,
+                                                          ERROR_MESSAGE_LEN) != 0:
+            raise PymwalibMetafitsContextDisplayError(f"Error calling mwalib_metafits_context_display(): "
+                                                      f"{error_message.decode('utf-8').rstrip()}")
 
     def __repr__(self):
         """Returns a representation of the class"""

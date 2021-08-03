@@ -8,7 +8,8 @@
 #
 import ctypes as ct
 from datetime import datetime
-from .mwalib import mwalib_library,CMetafitsMetadataS, CMetafitsContextS,CCorrelatorContextS,CVoltageContextS,create_string_buffer
+from .mwalib import mwalib_library, CMetafitsMetadataS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS, \
+    create_string_buffer
 from .common import ERROR_MESSAGE_LEN, MWAMode, GeometricDelaysApplied
 from .errors import PymwalibMetafitsMetadataGetError
 from .antenna import Antenna
@@ -16,6 +17,7 @@ from .baseline import Baseline
 from .rfinput import RFInput
 from .coarse_channel import CoarseChannel
 from .timestep import TimeStep
+
 
 class MetafitsMetadata:
     def __init__(self,
@@ -28,11 +30,11 @@ class MetafitsMetadata:
         c_object_ptr = ct.POINTER(CMetafitsMetadataS)()
 
         if mwalib_library.mwalib_metafits_metadata_get(metafits_context,
-                                               correlator_context,
-                                               voltage_context,
-                                               ct.byref(c_object_ptr),
-                                               error_message,
-                                               ERROR_MESSAGE_LEN) != 0:
+                                                       correlator_context,
+                                                       voltage_context,
+                                                       ct.byref(c_object_ptr),
+                                                       error_message,
+                                                       ERROR_MESSAGE_LEN) != 0:
             raise PymwalibMetafitsMetadataGetError(
                 f"Error creating metafits metadata object: {error_message.decode('utf-8').rstrip()}")
         else:
@@ -70,6 +72,8 @@ class MetafitsMetadata:
             self.corr_fine_chan_width_hz: int = c_object.corr_fine_chan_width_hz
             self.corr_int_time_ms: int = c_object.corr_int_time_ms
             self.num_corr_fine_chans_per_coarse: int = c_object.num_corr_fine_chans_per_coarse
+            self.volt_fine_chan_width_hz: int = c_object.volt_fine_chan_width_hz
+            self.num_volt_fine_chans_per_coarse: int = c_object.num_volt_fine_chans_per_coarse
             self.sched_start_utc: datetime = datetime.utcfromtimestamp(c_object.sched_start_utc)
             self.sched_end_utc: datetime = datetime.utcfromtimestamp(c_object.sched_end_utc)
             self.sched_start_mjd: float = c_object.sched_start_mjd
@@ -89,6 +93,7 @@ class MetafitsMetadata:
             self.num_visibility_pols: int = c_object.num_visibility_pols
             self.num_metafits_timesteps: int = c_object.num_metafits_timesteps
             self.num_metafits_coarse_chans: int = c_object.num_metafits_coarse_chans
+            self.num_metafits_fine_chan_freqs: int = c_object.num_metafits_fine_chan_freqs
             self.obs_bandwidth_hz: int = c_object.obs_bandwidth_hz
             self.coarse_chan_width_hz: int = c_object.coarse_chan_width_hz
             self.centre_freq_hz: int = c_object.centre_freq_hz
@@ -108,6 +113,11 @@ class MetafitsMetadata:
 
             # Populate coarse channels
             self.metafits_coarse_chans = CoarseChannel.get_metafits_coarse_channels(c_object)
+
+            # fine chan frequencies
+            self.metafits_fine_chan_freqs_hz = []
+            for i in range(0, 4):
+                self.metafits_fine_chan_freqs_hz.append(c_object.metafits_fine_chan_freqs_hz[i])
 
             # We're now finished with the C memory, so free it
             mwalib_library.mwalib_metafits_metadata_free(c_object)
@@ -144,7 +154,7 @@ class MetafitsMetadata:
                f"Observation Name                      : {self.obs_name}\n" \
                f"Mode                                  : {self.mode}\n" \
                f"geometric_delays_applied              : {self.geometric_delays_applied}\n" \
-               f"cable_delays_applied                  : {self.cable_delays_applied}\n"\
+               f"cable_delays_applied                  : {self.cable_delays_applied}\n" \
                f"calibration_delays_and_gains_applied  : {self.calibration_delays_and_gains_applied}\n" \
                f"Correlator fine channel width (Hz)    : {self.corr_fine_chan_width_hz}\n" \
                f"Correlator int. time (ms)             : {self.corr_int_time_ms}\n" \
@@ -165,6 +175,7 @@ class MetafitsMetadata:
                f"Visibility pols                       : {self.num_visibility_pols}\n" \
                f"num antenna pols                      : {self.num_ant_pols}\n" \
                f"num metafits timesteps                : {self.num_metafits_timesteps}\n" \
-               f"num metafits coarse channe            : {self.num_metafits_coarse_chans}\n" \
+               f"num metafits coarse channels          : {self.num_metafits_coarse_chans}\n" \
+               f"num metafits fine channels            : {self.num_metafits_fine_chan_freqs}\n" \
                f"Observation bandwidth                 : {float(self.obs_bandwidth_hz) / 1000000.} MHz\n" \
                f"Coarse channel width                  : {float(self.coarse_chan_width_hz) / 1000000.} MHz\n)\n"

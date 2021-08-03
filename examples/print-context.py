@@ -7,12 +7,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import argparse
-import numpy as np
+
 from pymwalib.common import MWAVersion
-from pymwalib.metafits_context import MetafitsContext
 from pymwalib.correlator_context import CorrelatorContext
-from pymwalib.voltage_context import VoltageContext
+from pymwalib.metafits_context import MetafitsContext
 from pymwalib.version import check_mwalib_version
+from pymwalib.voltage_context import VoltageContext
 
 if __name__ == "__main__":
     # ensure we have a compatible mwalib first
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             print(f"{len(corr_suffixes)} correlator/gpubox files detected")
             context = CorrelatorContext(args.metafits, args.datafiles)
         elif (len(dat_suffixes) > 0 and len(corr_suffixes) + len(sub_suffixes) == 0) or \
-             (len(sub_suffixes) > 0 and len(corr_suffixes) + len(dat_suffixes) == 0):
+                (len(sub_suffixes) > 0 and len(corr_suffixes) + len(dat_suffixes) == 0):
             print(f"{len(dat_suffixes)} voltage data files detected")
             context = VoltageContext(args.metafits, args.datafiles)
         else:

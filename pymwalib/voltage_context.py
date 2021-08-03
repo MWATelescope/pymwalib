@@ -6,10 +6,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import ctypes
+
 import numpy.ctypeslib as npct
-from .mwalib import CVoltageContextS,ct,mwalib_library,create_string_buffer,CVoltageMetadataS,MWALIB_SUCCESS,MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN
-from .common import ERROR_MESSAGE_LEN,MWAVersion
-from .errors import PymwalibVoltageMetadataGetError,PymwalibVoltageContextNewError,PymwalibCorrelatorContextDisplayError,PymwalibNoDataForTimestepAndCoarseChannelError,PymwalibVoltageContextReadFileError,PymwalibVoltageContextReadSecondError
+from .mwalib import CVoltageContextS, ct, mwalib_library, create_string_buffer, CVoltageMetadataS, MWALIB_SUCCESS, \
+    MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN
+from .common import ERROR_MESSAGE_LEN, MWAVersion
+from .errors import PymwalibVoltageMetadataGetError, PymwalibVoltageContextNewError, \
+    PymwalibCorrelatorContextDisplayError, PymwalibNoDataForTimestepAndCoarseChannelError, \
+    PymwalibVoltageContextReadFileError, PymwalibVoltageContextReadSecondError, \
+    PymwalibVoltageContextGetFineChanFreqsArrayError
 from .coarse_channel import CoarseChannel
 from .metafits_metadata import MetafitsMetadata
 from .timestep import TimeStep
@@ -18,6 +24,7 @@ from .version import check_mwalib_version
 
 class VoltageContext:
     """Main class to interface with mwalib"""
+
     def __init__(self, metafits_filename: str, voltage_filenames: list):
         """Take metafits and voltage files, and populate this class via mwalib"""
         #
@@ -149,72 +156,102 @@ class VoltageContext:
             error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
             if mwalib_library.mwalib_voltage_context_new(
-                m, g, len(encoded), ct.byref(self._voltage_context_object), error_message, ERROR_MESSAGE_LEN) != 0:
+                    m, g, len(encoded), ct.byref(self._voltage_context_object), error_message, ERROR_MESSAGE_LEN) != 0:
                 raise PymwalibVoltageContextNewError(f"Error creating voltage context object: "
-                                             f"{error_message.decode('utf-8').rstrip()}")
+                                                     f"{error_message.decode('utf-8').rstrip()}")
         else:
-            raise PymwalibVoltageContextNewError(f"Error creating voltage context object: mwalib is not loaded.")
+            raise PymwalibVoltageContextNewError("Error creating voltage context object: mwalib is not loaded.")
+
+    def get_fine_chan_freqs_hz_array(self, volt_coarse_chan_indices) -> list:
+        """Populates a list of fine channel centre frequencies based on the input list of coarse channel
+           indices"""
+        error_message = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        volt_coarse_chan_indices_type = ctypes.c_ulong * len(volt_coarse_chan_indices)
+        volt_coarse_chan_indices_array = volt_coarse_chan_indices_type(*volt_coarse_chan_indices)
+
+        out_frequencies_len = len(volt_coarse_chan_indices) * self.metafits_context.num_volt_fine_chans_per_coarse
+        out_frequencies_type = ct.c_double * out_frequencies_len
+        out_frequencies = out_frequencies_type()
+
+        if mwalib_library.mwalib_voltage_context_get_fine_chan_freqs_hz_array(self._voltage_context_object,
+                                                                              volt_coarse_chan_indices_array,
+                                                                              len(volt_coarse_chan_indices),
+                                                                              out_frequencies,
+                                                                              out_frequencies_len,
+                                                                              error_message,
+                                                                              ERROR_MESSAGE_LEN) != 0:
+            raise PymwalibVoltageContextGetFineChanFreqsArrayError(
+                f"Error calling mwalib_voltage_context_get_fine_chan_freqs_hz_array(): "
+                f"{error_message.decode('utf-8').rstrip()}")
+        out_frequencies_list = []
+
+        for i in range(0, out_frequencies_len):
+            out_frequencies_list.append(out_frequencies[i])
+
+        return out_frequencies_list
 
     def display(self):
-         """Displays a human readable summary of the voltage context"""
-         error_message = create_string_buffer(ERROR_MESSAGE_LEN)
+        """Displays a human readable summary of the voltage context"""
+        error_message = create_string_buffer(ERROR_MESSAGE_LEN)
 
-         if mwalib_library.mwalib_voltage_context_display(self._voltage_context_object,
-                                                  error_message,
-                                                  ERROR_MESSAGE_LEN) != 0:
-             raise PymwalibCorrelatorContextDisplayError(f"Error calling mwalib_voltage_context_display(): "
+        if mwalib_library.mwalib_voltage_context_display(self._voltage_context_object,
+                                                         error_message,
+                                                         ERROR_MESSAGE_LEN) != 0:
+            raise PymwalibCorrelatorContextDisplayError(f"Error calling mwalib_voltage_context_display(): "
                                                         f"{error_message.decode('utf-8').rstrip()}")
 
     def read_file(self, timestep_index: int, coarse_chan_index: int):
-         """Retrieve one file of VCS data as a numpy array."""
-         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
+        """Retrieve one file of VCS data as a numpy array."""
+        error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
-         byte_buffer_len = self.voltage_block_size_bytes * \
-                           self.num_voltage_blocks_per_timestep
+        byte_buffer_len = self.voltage_block_size_bytes * self.num_voltage_blocks_per_timestep
 
-         byte_buffer_type = ct.c_byte * byte_buffer_len
-         buffer = byte_buffer_type()
+        byte_buffer_type = ct.c_byte * byte_buffer_len
+        buffer = byte_buffer_type()
 
-         ret_val = mwalib_library.mwalib_voltage_context_read_file(self._voltage_context_object,
-                                                    ct.c_size_t(timestep_index),
-                                                    ct.c_size_t(coarse_chan_index),
-                                                    buffer,
-                                                    byte_buffer_len,
-                                                    error_message, ERROR_MESSAGE_LEN)
+        ret_val = mwalib_library.mwalib_voltage_context_read_file(self._voltage_context_object,
+                                                                  ct.c_size_t(timestep_index),
+                                                                  ct.c_size_t(coarse_chan_index),
+                                                                  buffer,
+                                                                  byte_buffer_len,
+                                                                  error_message, ERROR_MESSAGE_LEN)
 
-         if ret_val == MWALIB_SUCCESS:
-             return npct.as_array(buffer, shape=(byte_buffer_len,))
-         elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-             raise PymwalibNoDataForTimestepAndCoarseChannelError(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
-         else:
-             raise PymwalibVoltageContextReadFileError(f"Error reading data: "
-                                                         f"{error_message.decode('utf-8').rstrip()}")
+        if ret_val == MWALIB_SUCCESS:
+            return npct.as_array(buffer, shape=(byte_buffer_len,))
+        elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
+            raise PymwalibNoDataForTimestepAndCoarseChannelError(
+                f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
+        else:
+            raise PymwalibVoltageContextReadFileError(f"Error reading data: "
+                                                      f"{error_message.decode('utf-8').rstrip()}")
 
+    def read_second(self, gps_second_start: int, gps_second_count: int, coarse_chan_index: int):
+        """Retrieve multiple seconds of VCS data as a numpy array."""
+        error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
-    def read_second(self, gps_second_start: int , gps_second_count: int, coarse_chan_index: int):
-         """Retrieve multiple seconds of VCS data as a numpy array."""
-         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
+        byte_buffer_len = self.voltage_block_size_bytes * self.num_voltage_blocks_per_second * gps_second_count
 
-         byte_buffer_len = self.voltage_block_size_bytes * self.num_voltage_blocks_per_second * gps_second_count
+        byte_buffer_type = ct.c_byte * byte_buffer_len
+        buffer = byte_buffer_type()
 
-         byte_buffer_type = ct.c_byte * byte_buffer_len
-         buffer = byte_buffer_type()
+        ret_val = mwalib_library.mwalib_voltage_context_read_second(self._voltage_context_object,
+                                                                    ct.c_ulong(gps_second_start),
+                                                                    ct.c_size_t(gps_second_count),
+                                                                    ct.c_size_t(coarse_chan_index),
+                                                                    buffer,
+                                                                    byte_buffer_len,
+                                                                    error_message, ERROR_MESSAGE_LEN)
 
-         ret_val = mwalib_library.mwalib_voltage_context_read_second(self._voltage_context_object,
-                                                      ct.c_ulong(gps_second_start),
-                                                      ct.c_size_t(gps_second_count),
-                                                      ct.c_size_t(coarse_chan_index),
-                                                      buffer,
-                                                      byte_buffer_len,
-                                                      error_message, ERROR_MESSAGE_LEN)
-
-         if ret_val == MWALIB_SUCCESS:
-             return npct.as_array(buffer, shape=(byte_buffer_len,))
-         elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-             raise PymwalibNoDataForTimestepAndCoarseChannelError(f"Not all data exists for {gps_second_start} (for {gps_second_count} sec) and coarse channel {coarse_chan_index}")
-         else:
-             raise PymwalibVoltageContextReadSecondError(f"Error reading data: "
-                                                             f"{error_message.decode('utf-8').rstrip()}")
+        if ret_val == MWALIB_SUCCESS:
+            return npct.as_array(buffer, shape=(byte_buffer_len,))
+        elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
+            raise PymwalibNoDataForTimestepAndCoarseChannelError(
+                f"Not all data exists for {gps_second_start} (for {gps_second_count} sec) and coarse channel "
+                f"{coarse_chan_index}")
+        else:
+            raise PymwalibVoltageContextReadSecondError(f"Error reading data: "
+                                                        f"{error_message.decode('utf-8').rstrip()}")
 
     def __repr__(self):
         """Returns a representation of the class"""

@@ -13,6 +13,7 @@ MWALIB_SUCCESS = 0
 MWALIB_FAILURE = 1
 MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN = -1
 
+
 #
 # Creates a string buffer for interacting with C strings
 #
@@ -52,8 +53,9 @@ mwalib_library = None
 try:
     mwalib_library = ct.cdll.LoadLibrary(mwalib_filename)
 except Exception as library_load_err:
-    print(f"Error loading {mwalib_filename}. Please check that it is in your system library path or in your LD_LIBRARY_PATH "
-          f"environment variable.\n\nError was: {library_load_err}")
+    print(
+        f"Error loading {mwalib_filename}. Please check that it is in your system library path or in your LD_LIBRARY_PATH "
+        f"environment variable.\n\nError was: {library_load_err}")
     exit(1)
 
 #
@@ -82,11 +84,11 @@ if mwalib_library:
     # mwalib_metafits_context_new()
     #
     mwalib_library.mwalib_metafits_context_new.argtypes = \
-        (ct.c_char_p,                               # metafits
-         ct.c_uint,                                 # MWAVersion
-         ct.POINTER(ct.POINTER(CMetafitsContextS)), # Pointer to pointer to CorrelatorContext
-         ct.c_char_p,                               # error message
-         ct.c_size_t)                               # length of error message
+        (ct.c_char_p,  # metafits
+         ct.c_uint,  # MWAVersion
+         ct.POINTER(ct.POINTER(CMetafitsContextS)),  # Pointer to pointer to CorrelatorContext
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
 
     #
     # mwalib_metafits_context_free()
@@ -99,7 +101,6 @@ if mwalib_library:
     #
     mwalib_library.mwalib_metafits_context_display.argtypes = (ct.POINTER(CMetafitsContextS),)
     mwalib_library.mwalib_metafits_context_display.restype = ct.c_int32
-
 
     #
     # C Antenna struct
@@ -116,14 +117,12 @@ if mwalib_library:
                     ('height_m', ct.c_double),
                     ]
 
-
     #
     # C Baseline struct
     #
     class CBaselineS(ct.Structure):
         _fields_ = [('ant1_index', ct.c_size_t),
                     ('ant2_index', ct.c_size_t), ]
-
 
     #
     # C CoarseChannel struct
@@ -136,7 +135,6 @@ if mwalib_library:
                     ('chan_start_hz', ct.c_uint32),
                     ('chan_centre_hz', ct.c_uint32),
                     ('chan_end_hz', ct.c_uint32), ]
-
 
     #
     # C RFInput struct
@@ -157,14 +155,12 @@ if mwalib_library:
                     ('rec_number', ct.c_uint32),
                     ('rec_slot_number', ct.c_uint32)]
 
-
     #
     # C TimeStep struct
     #
     class CTimeStepS(ct.Structure):
         _fields_ = [('unix_time_ms', ct.c_uint64),
                     ('gps_time_ms', ct.c_uint64), ]
-
 
     #
     # C MetafitsMetadata struct
@@ -201,6 +197,8 @@ if mwalib_library:
                     ('corr_fine_chan_width_hz', ct.c_uint32),
                     ('corr_int_time_ms', ct.c_uint64),
                     ('num_corr_fine_chans_per_coarse', ct.c_size_t),
+                    ('volt_fine_chan_width_hz', ct.c_int32),
+                    ('num_volt_fine_chans_per_coarse', ct.c_size_t),
                     ('receivers', ct.POINTER(ct.c_size_t)),
                     ('delays', ct.POINTER(ct.c_uint32)),
                     ('sched_start_utc', ct.c_uint64),
@@ -225,6 +223,8 @@ if mwalib_library:
                     ('num_visibility_pols', ct.c_size_t),
                     ('num_metafits_coarse_chans', ct.c_size_t),
                     ('metafits_coarse_chans', ct.POINTER(CCoarseChannelS)),
+                    ('num_metafits_fine_chan_freqs', ct.c_size_t),
+                    ('metafits_fine_chan_freqs_hz', ct.POINTER(ct.c_double)),
                     ('num_metafits_timesteps', ct.c_size_t),
                     ('metafits_timesteps', ct.POINTER(CTimeStepS)),
                     ('obs_bandwidth_hz', ct.c_uint32),
@@ -237,12 +237,12 @@ if mwalib_library:
     # mwalib_metafits_metadata_get()
     #
     mwalib_library.mwalib_metafits_metadata_get.argtypes = \
-        (ct.POINTER(CMetafitsContextS),                 # metafits context pointer OR
-         ct.POINTER(CCorrelatorContextS),               # correlator context pointer OR
-         ct.POINTER(CVoltageContextS),                  # voltage context pointer
-         ct.POINTER(ct.POINTER(CMetafitsMetadataS)),    # Pointer to pointer to CMetafitsMetadataS
-         ct.c_char_p,                                   # error message
-         ct.c_size_t)                                   # length of error message
+        (ct.POINTER(CMetafitsContextS),  # metafits context pointer OR
+         ct.POINTER(CCorrelatorContextS),  # correlator context pointer OR
+         ct.POINTER(CVoltageContextS),  # voltage context pointer
+         ct.POINTER(ct.POINTER(CMetafitsMetadataS)),  # Pointer to pointer to CMetafitsMetadataS
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
     mwalib_library.mwalib_metafits_metadata_get.restype = ct.c_int32
 
     #
@@ -255,12 +255,12 @@ if mwalib_library:
     # mwalib_correlator_context_new()
     #
     mwalib_library.mwalib_correlator_context_new.argtypes = \
-        (ct.c_char_p,                                   # metafits
-         ct.POINTER(ct.c_char_p),                       # gpuboxes files array
-         ct.c_size_t,                                   # gpubox count
-         ct.POINTER(ct.POINTER(CCorrelatorContextS)),   # Pointer to pointer to CorrelatorContext
-         ct.c_char_p,                                   # error message
-         ct.c_size_t)                                   # length of error message
+        (ct.c_char_p,  # metafits
+         ct.POINTER(ct.c_char_p),  # gpuboxes files array
+         ct.c_size_t,  # gpubox count
+         ct.POINTER(ct.POINTER(CCorrelatorContextS)),  # Pointer to pointer to CorrelatorContext
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
     mwalib_library.mwalib_correlator_context_new.restype = ct.c_int32
 
     #
@@ -279,27 +279,40 @@ if mwalib_library:
     # mwalib_correlator_context_read_by_baseline()
     #
     mwalib_library.mwalib_correlator_context_read_by_baseline.argtypes = \
-        (ct.POINTER(CCorrelatorContextS),   # context
-         ct.c_size_t,                       # input timestep_index
-         ct.c_size_t,                       # input coarse_chan_index
-         ct.POINTER(ct.c_float),            # buffer_ptr
-         ct.c_size_t,                       # buffer_len
-         ct.c_char_p,                       # error message
-         ct.c_size_t)                        # length of error message
+        (ct.POINTER(CCorrelatorContextS),  # context
+         ct.c_size_t,  # input timestep_index
+         ct.c_size_t,  # input coarse_chan_index
+         ct.POINTER(ct.c_float),  # buffer_ptr
+         ct.c_size_t,  # buffer_len
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
     mwalib_library.mwalib_correlator_context_read_by_baseline.restype = ct.c_int32
 
     #
     # mwalib_correlator_context_read_by_frequency()
     #
     mwalib_library.mwalib_correlator_context_read_by_frequency.argtypes = \
-        (ct.POINTER(CCorrelatorContextS),   # context
-         ct.c_size_t,                       # input timestep_index
-         ct.c_size_t,                       # input coarse_chan_index
-         ct.POINTER(ct.c_float),            # buffer_ptr
-         ct.c_size_t,                       # buffer_len
-         ct.c_char_p,                       # error message
-         ct.c_size_t)                       # length of error message
+        (ct.POINTER(CCorrelatorContextS),  # context
+         ct.c_size_t,  # input timestep_index
+         ct.c_size_t,  # input coarse_chan_index
+         ct.POINTER(ct.c_float),  # buffer_ptr
+         ct.c_size_t,  # buffer_len
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
     mwalib_library.mwalib_correlator_context_read_by_frequency.restype = ct.c_int32
+
+    #
+    # mwalib_correlator_context_get_fine_chan_freqs_hz_array()
+    #
+    mwalib_library.mwalib_correlator_context_get_fine_chan_freqs_hz_array.argtypes = \
+        (ct.POINTER(CCorrelatorContextS),  # context
+         ct.POINTER(ct.c_size_t),  # coarse_chan_indices_ptr
+         ct.c_size_t,  # coarse_chan_indices_len
+         ct.POINTER(ct.c_double),  # buffer_ptr
+         ct.c_size_t,  # buffer_len
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
+    mwalib_library.mwalib_correlator_context_get_fine_chan_freqs_hz_array.restype = ct.c_int32
 
     #
     # C CorrelatorMetadata struct
@@ -321,7 +334,6 @@ if mwalib_library:
                     ('common_end_gps_time_ms', ct.c_uint64),
                     ('common_duration_ms', ct.c_uint64),
                     ('common_bandwidth_hz', ct.c_uint32),
-
                     ('num_common_good_timesteps', ct.c_size_t),
                     ('common_good_timestep_indices', ct.POINTER(ct.c_size_t)),
                     ('num_common_good_coarse_chans', ct.c_size_t),
@@ -332,24 +344,23 @@ if mwalib_library:
                     ('common_good_end_gps_time_ms', ct.c_uint64),
                     ('common_good_duration_ms', ct.c_uint64),
                     ('common_good_bandwidth_hz', ct.c_uint32),
-
                     ('num_provided_timesteps', ct.c_size_t),
                     ('provided_timestep_indices', ct.POINTER(ct.c_size_t)),
                     ('num_provided_coarse_chans', ct.c_size_t),
                     ('provided_coarse_chan_indices', ct.POINTER(ct.c_size_t)),
-
                     ('num_timestep_coarse_chan_bytes', ct.c_size_t),
                     ('num_timestep_coarse_chan_floats', ct.c_size_t),
                     ('num_gpubox_files', ct.c_size_t)
                     ]
+
     #
     # mwalib_correlator_metadata_get()
     #
     mwalib_library.mwalib_correlator_metadata_get.argtypes = \
-        (ct.POINTER(CCorrelatorContextS),               # correlator context pointer
+        (ct.POINTER(CCorrelatorContextS),  # correlator context pointer
          ct.POINTER(ct.POINTER(CCorrelatorMetadataS)),  # Pointer to pointer to CCorrelatorMetadataS
-         ct.c_char_p,                                   # error message
-         ct.c_size_t)                                   # length of error message
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
     mwalib_library.mwalib_correlator_metadata_get.restype = ct.c_int32
 
     #
@@ -368,7 +379,6 @@ if mwalib_library:
                     ('timestep_duration_ms', ct.c_uint64),
                     ('coarse_chans', ct.POINTER(CCoarseChannelS)),
                     ('num_coarse_chans', ct.c_size_t),
-
                     ('num_common_timesteps', ct.c_size_t),
                     ('common_timestep_indices', ct.POINTER(ct.c_size_t)),
                     ('num_common_coarse_chans', ct.c_size_t),
@@ -379,7 +389,6 @@ if mwalib_library:
                     ('common_end_gps_time_ms', ct.c_uint64),
                     ('common_duration_ms', ct.c_uint64),
                     ('common_bandwidth_hz', ct.c_uint32),
-
                     ('num_common_good_timesteps', ct.c_size_t),
                     ('common_good_timestep_indices', ct.POINTER(ct.c_size_t)),
                     ('num_common_good_coarse_chans', ct.c_size_t),
@@ -390,12 +399,10 @@ if mwalib_library:
                     ('common_good_end_gps_time_ms', ct.c_uint64),
                     ('common_good_duration_ms', ct.c_uint64),
                     ('common_good_bandwidth_hz', ct.c_uint32),
-
                     ('num_provided_timesteps', ct.c_size_t),
                     ('provided_timestep_indices', ct.POINTER(ct.c_size_t)),
                     ('num_provided_coarse_chans', ct.c_size_t),
                     ('provided_coarse_chan_indices', ct.POINTER(ct.c_size_t)),
-
                     ('coarse_chan_width_hz', ct.c_uint32),
                     ('fine_chan_width_hz', ct.c_uint32),
                     ('num_fine_chans_per_coarse', ct.c_size_t),
@@ -413,10 +420,10 @@ if mwalib_library:
     # mwalib_voltage_metadata_get()
     #
     mwalib_library.mwalib_voltage_metadata_get.argtypes = \
-        (ct.POINTER(CVoltageContextS),              # voltage context pointer
-         ct.POINTER(ct.POINTER(CVoltageMetadataS)), # Pointer to pointer to CVoltageMetadata
-         ct.c_char_p,                               # error message
-         ct.c_size_t)                               # length of error message
+        (ct.POINTER(CVoltageContextS),  # voltage context pointer
+         ct.POINTER(ct.POINTER(CVoltageMetadataS)),  # Pointer to pointer to CVoltageMetadata
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
     mwalib_library.mwalib_voltage_metadata_get.restype = ct.c_int32
 
     #
@@ -443,7 +450,7 @@ if mwalib_library:
     #
     mwalib_library.mwalib_voltage_context_read_second.argtypes = \
         (ct.POINTER(CVoltageContextS),  # context
-         ct.c_ulong,   # input gps second start
+         ct.c_ulong,  # input gps second start
          ct.c_size_t,  # input gps second count
          ct.c_size_t,  # input coarse_chan_index
          ct.POINTER(ct.c_byte),  # buffer_ptr
@@ -451,3 +458,16 @@ if mwalib_library:
          ct.c_char_p,  # error message
          ct.c_size_t)  # length of error message
     mwalib_library.mwalib_voltage_context_read_second.restype = ct.c_int32
+
+    #
+    # mwalib_voltage_context_get_fine_chan_freqs_hz_array()
+    #
+    mwalib_library.mwalib_voltage_context_get_fine_chan_freqs_hz_array.argtypes = \
+        (ct.POINTER(CVoltageContextS),  # context
+         ct.POINTER(ct.c_size_t),  # coarse_chan_indices_ptr
+         ct.c_size_t,  # coarse_chan_indices_len
+         ct.POINTER(ct.c_double),  # buffer_ptr
+         ct.c_size_t,  # buffer_len
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
+    mwalib_library.mwalib_voltage_context_get_fine_chan_freqs_hz_array.restype = ct.c_int32

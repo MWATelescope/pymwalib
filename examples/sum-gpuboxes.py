@@ -11,13 +11,15 @@
 #      pip install joblib
 #
 import argparse
-import numpy as np
 import os
-from joblib import Parallel, delayed
-from pymwalib.correlator_context import CorrelatorContext
-from pymwalib.version import check_mwalib_version
-from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
 import time
+
+import numpy as np
+from joblib import Parallel, delayed
+
+from pymwalib.correlator_context import CorrelatorContext
+from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
+from pymwalib.version import check_mwalib_version
 
 
 def sum_by_baseline_task(metafits_filename: str, gpubox_filenames: list, coarse_chan_index: int) -> float:
@@ -88,7 +90,8 @@ if __name__ == "__main__":
     print(f"Using {num_cores} cores to fast sum all hdus...")
 
     start_time_fast = time.time()
-    processed_list = Parallel(n_jobs=num_cores)(delayed(sum_by_baseline_task)(args.metafits, args.gpuboxes, c) for c in range(24))
+    processed_list = Parallel(n_jobs=num_cores)(
+        delayed(sum_by_baseline_task)(args.metafits, args.gpuboxes, c) for c in range(24))
     fast_sum = np.sum(processed_list)
     stop_time_fast = time.time()
     print(f"Sum is: {fast_sum} in {stop_time_fast - start_time_fast} seconds.\n")
@@ -98,5 +101,3 @@ if __name__ == "__main__":
     slow_sum = sum_by_baseline_slow(args.metafits, args.gpuboxes)
     stop_time_slow = time.time()
     print(f"Sum is: {slow_sum} in {stop_time_slow - start_time_slow} seconds.")
-
-

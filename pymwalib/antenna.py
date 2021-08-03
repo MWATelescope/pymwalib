@@ -6,8 +6,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from .mwalib import  CAntennaS, CMetafitsMetadataS
+from .mwalib import CAntennaS, CMetafitsMetadataS
 from .rfinput import RFInput
+
 
 class Antenna:
     """
@@ -45,7 +46,6 @@ class Antenna:
         self.east_m = east_m
         self.height_m = height_m
 
-
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(" \
@@ -71,14 +71,14 @@ class Antenna:
 
             # Populate all the fields
             antennas.append(Antenna(i,
-                             obj.ant,
-                             obj.tile_id,
-                             obj.tile_name.decode("utf-8"),
-                             rf_inputs[obj.rfinput_x],
-                             rf_inputs[obj.rfinput_y],
-                             obj.electrical_length_m,
-                             obj.north_m,
-                             obj.east_m,
-                             obj.height_m))
+                                    obj.ant,
+                                    obj.tile_id,
+                                    obj.tile_name.decode("utf-8"),
+                                    rf_inputs[obj.rfinput_x],
+                                    rf_inputs[obj.rfinput_y],
+                                    obj.electrical_length_m,
+                                    obj.north_m,
+                                    obj.east_m,
+                                    obj.height_m))
 
         return antennas

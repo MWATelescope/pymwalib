@@ -11,18 +11,20 @@
 #      pip install joblib
 #
 import argparse
-import numpy as np
-from pymwalib.voltage_context import VoltageContext
-from pymwalib.version import check_mwalib_version
-from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
 import time
 
+import numpy as np
 
-def sum_by_file(context: VoltageContext, timestep_index:int, coarse_chan_index: int) -> int:
+from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
+from pymwalib.version import check_mwalib_version
+from pymwalib.voltage_context import VoltageContext
+
+
+def sum_by_file(context: VoltageContext, timestep_index: int, coarse_chan_index: int) -> int:
     total_sum = 0
 
     start_gpstime_sec = int(context.timesteps[context.provided_timestep_indices[t]].gps_time_ms / 1000)
-    gps_seconds_count = int(context.timestep_duration_ms/ 1000)
+    gps_seconds_count = int(context.timestep_duration_ms / 1000)
     end_gpstime_sec = start_gpstime_sec + gps_seconds_count
 
     print(f"...Summing {start_gpstime_sec} to {end_gpstime_sec} ({gps_seconds_count} seconds) and "
@@ -43,7 +45,8 @@ def sum_by_file(context: VoltageContext, timestep_index:int, coarse_chan_index: 
     return total_sum
 
 
-def sum_by_gps_second(context: VoltageContext, gps_start_sec, gps_end_sec, gps_seconds_count, coarse_chan_index: int) -> int:
+def sum_by_gps_second(context: VoltageContext, gps_start_sec, gps_end_sec, gps_seconds_count,
+                      coarse_chan_index: int) -> int:
     total_sum = 0
 
     print(f"...Summing {gps_start_sec} to {gps_end_sec} ({gps_seconds_count} seconds) and "
@@ -96,8 +99,9 @@ if __name__ == "__main__":
     # sum by gps second
     start_gpstime_sec = int(context.timesteps[context.provided_timestep_indices[0]].gps_time_ms / 1000)
     end_gpstime_sec = int((
-        context.timesteps[context.provided_timestep_indices[context.num_provided_timesteps - 1]].gps_time_ms +
-        context.timestep_duration_ms) / 1000)
+                                  context.timesteps[context.provided_timestep_indices[
+                                      context.num_provided_timesteps - 1]].gps_time_ms +
+                                  context.timestep_duration_ms) / 1000)
     gps_second_count = end_gpstime_sec - start_gpstime_sec
 
     print(f"sum_by_gps_second: Summing {context.num_provided_timesteps} timesteps "

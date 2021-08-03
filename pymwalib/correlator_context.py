@@ -6,12 +6,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import ctypes
+
 import numpy.ctypeslib as npct
 import ctypes as ct
-from .mwalib import CCorrelatorContextS, CCorrelatorMetadataS, mwalib_library,create_string_buffer,MWALIB_SUCCESS,MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN
+from .mwalib import CCorrelatorContextS, CCorrelatorMetadataS, mwalib_library, create_string_buffer, MWALIB_SUCCESS, \
+    MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN
 from .coarse_channel import CoarseChannel
 from .common import ERROR_MESSAGE_LEN, MWAVersion
-from .errors import PymwalibCorrelatorContextNewError,PymwalibCorrelatorContextDisplayError,PymwalibNoDataForTimestepAndCoarseChannelError,PymwalibCorrelatorContextReadByBaselineError,PymwalibCorrelatorContextReadByFrequencyError, PymwalibCorrelatorMetadataGetError
+from .errors import PymwalibCorrelatorContextNewError, PymwalibCorrelatorContextDisplayError, \
+    PymwalibNoDataForTimestepAndCoarseChannelError, PymwalibCorrelatorContextReadByBaselineError, \
+    PymwalibCorrelatorContextReadByFrequencyError, PymwalibCorrelatorMetadataGetError, \
+    PymwalibCorrelatorContextGetFineChanFreqsArrayError
 from .metafits_metadata import MetafitsMetadata
 from .timestep import TimeStep
 from .version import check_mwalib_version
@@ -19,6 +25,7 @@ from .version import check_mwalib_version
 
 class CorrelatorContext:
     """Main class to interface with mwalib correlator observations"""
+
     def __init__(self, metafits_filename: str, gpubox_filenames: list):
         """Take metafits and gpubox files, and populate this class via mwalib"""
         #
@@ -140,44 +147,74 @@ class CorrelatorContext:
             error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
 
             if mwalib_library.mwalib_correlator_context_new(
-                m, g, len(encoded), ct.byref(self._correlator_context_object), error_message, ERROR_MESSAGE_LEN) != 0:
+                    m, g, len(encoded), ct.byref(self._correlator_context_object), error_message,
+                    ERROR_MESSAGE_LEN) != 0:
                 raise PymwalibCorrelatorContextNewError(f"Error creating correlator context object: "
-                                             f"{error_message.decode('utf-8').rstrip()}")
+                                                        f"{error_message.decode('utf-8').rstrip()}")
         else:
-            raise PymwalibCorrelatorContextNewError(f"Error creating correlator context object: mwalib is not loaded.")
+            raise PymwalibCorrelatorContextNewError("Error creating correlator context object: mwalib is not loaded.")
+
+    def get_fine_chan_freqs_hz_array(self, corr_coarse_chan_indices) -> list:
+        """Populates a list of fine channel centre frequencies based on the input list of coarse channel
+           indices"""
+        error_message = create_string_buffer(ERROR_MESSAGE_LEN)
+
+        corr_coarse_chan_indices_type = ctypes.c_ulong * len(corr_coarse_chan_indices)
+        corr_coarse_chan_indices_array = corr_coarse_chan_indices_type(*corr_coarse_chan_indices)
+
+        out_frequencies_len = len(corr_coarse_chan_indices) * self.metafits_context.num_corr_fine_chans_per_coarse
+        out_frequencies_type = ct.c_double * out_frequencies_len
+        out_frequencies = out_frequencies_type()
+
+        if mwalib_library.mwalib_correlator_context_get_fine_chan_freqs_hz_array(self._correlator_context_object,
+                                                                                 corr_coarse_chan_indices_array,
+                                                                                 len(corr_coarse_chan_indices),
+                                                                                 out_frequencies,
+                                                                                 out_frequencies_len,
+                                                                                 error_message,
+                                                                                 ERROR_MESSAGE_LEN) != 0:
+            raise PymwalibCorrelatorContextGetFineChanFreqsArrayError(
+                f"Error calling mwalib_correlator_get_fine_chan_freqs_hz_array(): "
+                f"{error_message.decode('utf-8').rstrip()}")
+        out_frequencies_list = []
+
+        for i in range(0, out_frequencies_len):
+            out_frequencies_list.append(out_frequencies[i])
+
+        return out_frequencies_list
 
     def display(self):
-         """Displays a human readable summary of the correlator context"""
-         error_message = create_string_buffer(ERROR_MESSAGE_LEN)
+        """Displays a human readable summary of the correlator context"""
+        error_message = create_string_buffer(ERROR_MESSAGE_LEN)
 
-         if mwalib_library.mwalib_correlator_context_display(self._correlator_context_object,
-                                                     error_message,
-                                                     ERROR_MESSAGE_LEN) != 0:
-             raise PymwalibCorrelatorContextDisplayError(f"Error calling mwalib_correlator_context_display(): "
+        if mwalib_library.mwalib_correlator_context_display(self._correlator_context_object,
+                                                            error_message,
+                                                            ERROR_MESSAGE_LEN) != 0:
+            raise PymwalibCorrelatorContextDisplayError(f"Error calling mwalib_correlator_context_display(): "
                                                         f"{error_message.decode('utf-8').rstrip()}")
 
     def read_by_baseline(self, timestep_index: int, coarse_chan_index: int):
-         """Retrieve one HDU (ordered baseline,freq,pol,r,i) as a numpy array."""
-         error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
+        """Retrieve one HDU (ordered baseline,freq,pol,r,i) as a numpy array."""
+        error_message = " ".encode("utf-8") * ERROR_MESSAGE_LEN
 
-         float_buffer_type = ct.c_float * self.num_timestep_coarse_chan_floats
-         buffer = float_buffer_type()
+        float_buffer_type = ct.c_float * self.num_timestep_coarse_chan_floats
+        buffer = float_buffer_type()
 
-         ret_val = mwalib_library.mwalib_correlator_context_read_by_baseline(self._correlator_context_object,
-                                                              ct.c_size_t(timestep_index),
-                                                              ct.c_size_t(coarse_chan_index),
-                                                              buffer,
-                                                              self.num_timestep_coarse_chan_floats,
-                                                              error_message, ERROR_MESSAGE_LEN)
+        ret_val = mwalib_library.mwalib_correlator_context_read_by_baseline(self._correlator_context_object,
+                                                                            ct.c_size_t(timestep_index),
+                                                                            ct.c_size_t(coarse_chan_index),
+                                                                            buffer,
+                                                                            self.num_timestep_coarse_chan_floats,
+                                                                            error_message, ERROR_MESSAGE_LEN)
 
-         if ret_val == MWALIB_SUCCESS:
-             return npct.as_array(buffer, shape=(self.num_timestep_coarse_chan_floats,))
-         elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-             raise PymwalibNoDataForTimestepAndCoarseChannelError(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
-         else:
-             raise PymwalibCorrelatorContextReadByBaselineError(f"Error reading data: "
-                                                  f"{error_message.decode('utf-8').rstrip()}")
-
+        if ret_val == MWALIB_SUCCESS:
+            return npct.as_array(buffer, shape=(self.num_timestep_coarse_chan_floats,))
+        elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
+            raise PymwalibNoDataForTimestepAndCoarseChannelError(
+                f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
+        else:
+            raise PymwalibCorrelatorContextReadByBaselineError(f"Error reading data: "
+                                                               f"{error_message.decode('utf-8').rstrip()}")
 
     def read_by_frequency(self, timestep_index: int, coarse_chan_index: int):
         """Retrieve one HDU (ordered freq,baseline,pol,r,i) as a numpy array."""
@@ -187,18 +224,20 @@ class CorrelatorContext:
         buffer = float_buffer_type()
 
         ret_val = mwalib_library.mwalib_correlator_context_read_by_frequency(self._correlator_context_object,
-                                                              ct.c_size_t(timestep_index),
-                                                              ct.c_size_t(coarse_chan_index),
-                                                              buffer,
-                                                              self.num_timestep_coarse_chan_floats,
-                                                              error_message, ERROR_MESSAGE_LEN)
+                                                                             ct.c_size_t(timestep_index),
+                                                                             ct.c_size_t(coarse_chan_index),
+                                                                             buffer,
+                                                                             self.num_timestep_coarse_chan_floats,
+                                                                             error_message, ERROR_MESSAGE_LEN)
         if ret_val == MWALIB_SUCCESS:
             return npct.as_array(buffer, shape=(self.num_timestep_coarse_chan_floats,))
         elif ret_val == MWALIB_NO_DATA_FOR_TIMESTEP_COARSECHAN:
-            raise PymwalibNoDataForTimestepAndCoarseChannelError(f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
+            raise PymwalibNoDataForTimestepAndCoarseChannelError(
+                f"No data exists for this timestep {timestep_index} and coarse channel {coarse_chan_index}")
         else:
             raise PymwalibCorrelatorContextReadByFrequencyError(f"Error reading data: "
-                                                                   f"{error_message.decode('utf-8').rstrip()}")
+                                                                f"{error_message.decode('utf-8').rstrip()}")
+
     def __repr__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
