@@ -2,6 +2,13 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.8.8 03-Aug-2021 (Pre-release)
+
+* Requires mwalib 0.8.7.
+* Release to fix issue with pypi deployment.
+* Pymwalib now only has to match mwalib major and minor version, not patch version. This allows more flexibility in releases.
+* No other changes.
+
 ## 0.8.7 03-Aug-2021 (Pre-release)
 
 * Requires mwalib 0.8.7.

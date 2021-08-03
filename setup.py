@@ -1,3 +1,4 @@
+from setuptools import setup
 from distutils.core import setup
 
 # read the contents of your README file
@@ -10,7 +11,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name='pymwalib',
     packages=['pymwalib'],
-    version='0.8.7',
+    version='0.8.8',
     license='mpl-2.0',
     description='A Python interface for mwalib, a library to read Murchison Widefield Array (MWA) raw visibilities, '
                 'voltages and metadata into a common structure',

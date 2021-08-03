@@ -5,12 +5,14 @@ cd ..
 
 echo Clearing old dist
 rm -rf dist
+rm -rf build
+rm -rf .pymwalib.egg-info
 
 echo Ensure all tools are up to date
-pip install --upgrade setuptools wheel pip
+pip install --upgrade pip setuptools distutils wheel twine
 
-echo Ensure twine is installed
-pip install twine
+echo Build
+python setup.py install
 
 echo Create the distribution
 python setup.py sdist

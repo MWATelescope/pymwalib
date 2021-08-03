@@ -63,7 +63,7 @@ def check_mwalib_version():
     # pre release rules also apply to major version 0
     # if ANY part of versions don't match then we are not compatible
     if mwalib_major == 0:
-        if mwalib_minor != pymwalib_minor or mwalib_patch != pymwalib_patch:
+        if mwalib_minor != pymwalib_minor:
             raise PymwalibMwalibVersionNotCompatibleError(f"pymwalib version "
                                                           f"{pymwalib_major}.{pymwalib_minor}.{pymwalib_patch} is not "
                                                           f"compatible with mwalib "
