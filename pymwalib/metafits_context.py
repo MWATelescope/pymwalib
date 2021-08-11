@@ -6,6 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import typing
 import ctypes as ct
 from .mwalib import CMetafitsContextS, mwalib_library, create_string_buffer
 from .common import ERROR_MESSAGE_LEN, MWAVersion
@@ -17,8 +18,8 @@ from .version import check_mwalib_version
 class MetafitsContext(MetafitsMetadata):
     """Main class to interface with mwalib metafits infomation"""
 
-    def __init__(self, metafits_filename: str, mwa_version: MWAVersion):
-        """Take metafits and populate this class via mwalib"""
+    def __init__(self, metafits_filename: str, mwa_version: typing.Optional[MWAVersion] = None):
+        """Take metafits and an MWAVersion or None, and populate this class via mwalib"""
         #
         # Ensure we have a compatible version of mwalib
         #
@@ -40,19 +41,27 @@ class MetafitsContext(MetafitsMetadata):
         if self._metafits_context_object:
             mwalib_library.mwalib_metafits_context_free(self._metafits_context_object)
 
-    def _get_metafits_context(self, metafits_filename: str, mwa_version: MWAVersion):
-        """This method will read and validate the metafits and gpubox files. If all has worked, then
-        the context object can be used in subsequent calls to populate aspects of this class."""
+    def _get_metafits_context(self, metafits_filename: str, mwa_version: typing.Optional[MWAVersion] = None):
+        """This method will read and validate the metafits and mwa version"""
         if mwalib_library:
             # Encode all inputs as UTF-8.
             m = ct.c_char_p(metafits_filename.encode("utf-8"))
 
+            # If mwa_version is None, then use alt method, otherwise pass the value for the enum
             error_message: bytes = create_string_buffer(ERROR_MESSAGE_LEN)
-            if mwalib_library.mwalib_metafits_context_new(
-                    m, mwa_version.value, ct.byref(self._metafits_context_object), error_message,
-                    ERROR_MESSAGE_LEN) != 0:
-                raise PymwalibMetafitsContextNewError(f"Error creating metafits context object: "
-                                                      f"{error_message.decode('utf-8').rstrip()}")
+
+            if mwa_version is None:
+                if mwalib_library.mwalib_metafits_context_new2(
+                        m, ct.byref(self._metafits_context_object), error_message,
+                        ERROR_MESSAGE_LEN) != 0:
+                    raise PymwalibMetafitsContextNewError(f"Error creating metafits context object: "
+                                                          f"{error_message.decode('utf-8').rstrip()}")
+            else:
+                if mwalib_library.mwalib_metafits_context_new(
+                        m, mwa_version.value, ct.byref(self._metafits_context_object), error_message,
+                        ERROR_MESSAGE_LEN) != 0:
+                    raise PymwalibMetafitsContextNewError(f"Error creating metafits context object: "
+                                                          f"{error_message.decode('utf-8').rstrip()}")
         else:
             raise PymwalibMetafitsContextNewError("Error creating metafits context object: mwalib.so is not loaded.")
 
@@ -65,6 +74,23 @@ class MetafitsContext(MetafitsMetadata):
                                                           ERROR_MESSAGE_LEN) != 0:
             raise PymwalibMetafitsContextDisplayError(f"Error calling mwalib_metafits_context_display(): "
                                                       f"{error_message.decode('utf-8').rstrip()}")
+
+    def get_expected_volt_filename(self, metafits_timestep_index: int, metafits_coarse_chan_index: int) -> str:
+        """Displays a human readable summary of the metafits context"""
+        error_message = create_string_buffer(ERROR_MESSAGE_LEN)
+        filename_len = 64
+        filename = create_string_buffer(filename_len)
+
+        if mwalib_library.mwalib_metafits_get_expected_volt_filename(self._metafits_context_object,
+                                                                     metafits_timestep_index,
+                                                                     metafits_coarse_chan_index,
+                                                                     filename,
+                                                                     filename_len,
+                                                                     error_message,
+                                                                     ERROR_MESSAGE_LEN) != 0:
+            raise PymwalibMetafitsContextDisplayError(f"Error calling mwalib_metafits_context_display(): "
+                                                      f"{error_message.decode('utf-8').rstrip()}")
+        return filename.decode('utf-8').strip()
 
     def __repr__(self):
         """Returns a representation of the class"""

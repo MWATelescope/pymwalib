@@ -89,6 +89,17 @@ if mwalib_library:
          ct.POINTER(ct.POINTER(CMetafitsContextS)),  # Pointer to pointer to CorrelatorContext
          ct.c_char_p,  # error message
          ct.c_size_t)  # length of error message
+    mwalib_library.mwalib_metafits_context_new.restype = ct.c_int32
+
+    #
+    # mwalib_metafits_context_new2()
+    #
+    mwalib_library.mwalib_metafits_context_new2.argtypes = \
+        (ct.c_char_p,  # metafits
+         ct.POINTER(ct.POINTER(CMetafitsContextS)),  # Pointer to pointer to CorrelatorContext
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
+    mwalib_library.mwalib_metafits_context_new2.restype = ct.c_int32
 
     #
     # mwalib_metafits_context_free()
@@ -101,6 +112,19 @@ if mwalib_library:
     #
     mwalib_library.mwalib_metafits_context_display.argtypes = (ct.POINTER(CMetafitsContextS),)
     mwalib_library.mwalib_metafits_context_display.restype = ct.c_int32
+
+    #
+    # mwalib_metafits_get_expected_volt_filename
+    #
+    mwalib_library.mwalib_metafits_get_expected_volt_filename.argtypes = \
+        (ct.POINTER(CMetafitsContextS),  # metafits context
+         ct.c_size_t,  # timestep_index
+         ct.c_size_t,  # coarse_chan_index
+         ct.c_char_p,  # filename buffer
+         ct.c_size_t,  # length of filename buffer
+         ct.c_char_p,  # error message
+         ct.c_size_t)  # length of error message
+    mwalib_library.mwalib_metafits_get_expected_volt_filename.restype = ct.c_int32
 
     #
     # C Antenna struct
@@ -152,8 +176,14 @@ if mwalib_library:
                     ('vcs_order', ct.c_uint32),
                     ('subfile_order', ct.c_uint32),
                     ('flagged', ct.c_bool),
+                    ('digital_gains', ct.POINTER(ct.c_uint32)),
+                    ('num_digital_gains', ct.c_size_t),
+                    ('dipole_delays', ct.POINTER(ct.c_uint32)),
+                    ('num_dipole_delays', ct.c_size_t),
+                    ('dipole_gains', ct.POINTER(ct.c_double)),
+                    ('num_dipole_gains', ct.c_size_t),
                     ('rec_number', ct.c_uint32),
-                    ('rec_slot_number', ct.c_uint32)]
+                    ('rec_slot_number', ct.c_uint32), ]
 
     #
     # C TimeStep struct
@@ -166,7 +196,8 @@ if mwalib_library:
     # C MetafitsMetadata struct
     #
     class CMetafitsMetadataS(ct.Structure):
-        _fields_ = [('obs_id', ct.c_uint32),
+        _fields_ = [('mwa_version', ct.c_uint32),
+                    ('obs_id', ct.c_uint32),
                     ('global_analogue_attenuation_db', ct.c_double),
                     ('ra_tile_pointing_deg', ct.c_double),
                     ('dec_tile_pointing_deg', ct.c_double),
@@ -200,7 +231,9 @@ if mwalib_library:
                     ('volt_fine_chan_width_hz', ct.c_int32),
                     ('num_volt_fine_chans_per_coarse', ct.c_size_t),
                     ('receivers', ct.POINTER(ct.c_size_t)),
+                    ('num_receivers', ct.c_size_t),
                     ('delays', ct.POINTER(ct.c_uint32)),
+                    ('num_delays', ct.c_size_t),
                     ('sched_start_utc', ct.c_uint64),
                     ('sched_end_utc', ct.c_uint64),
                     ('sched_start_mjd', ct.c_double),

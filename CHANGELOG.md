@@ -2,6 +2,15 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.9.1 11-Aug-2021 (Pre-release)
+
+* Requires mwalib 0.9.*.
+* Added mwa_version to MetafitsContext.
+* When working only with a MetafitsContext, None can be passed in lieu of an MWAVersion, and mwalib will attempt to determine the correct MWAVersion based on the MODE keyword from the metafits file.
+* Added method get_expected_volt_filename() function to MetafitsContext.
+* Added digital_gains, dipole_gains and dipole_delays Rfinput.
+* Added receivers, delays to MetafitsContext.
+
 ## 0.8.8 03-Aug-2021 (Pre-release)
 
 * Requires mwalib 0.8.7.

@@ -1,4 +1,3 @@
-from setuptools import setup
 from distutils.core import setup
 
 # read the contents of your README file
@@ -11,7 +10,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name='pymwalib',
     packages=['pymwalib'],
-    version='0.8.8',
+    version='0.9.1',
     license='mpl-2.0',
     description='A Python interface for mwalib, a library to read Murchison Widefield Array (MWA) raw visibilities, '
                 'voltages and metadata into a common structure',
@@ -20,7 +19,7 @@ setup(
     author='Greg Sleap',
     author_email='greg.sleap@curtin.edu.au',
     url='https://github.com/MWATelescope/pymwalib',
-    download_url='https://github.com/MWATelescope/pymwalib/archive/refs/tags/v0.8.7.tar.gz',
+    download_url='https://github.com/MWATelescope/pymwalib/archive/refs/tags/v0.9.1.tar.gz',
     keywords=['MWA', 'radioastronomy'],
     install_requires=[
         'numpy',

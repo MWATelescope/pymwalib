@@ -76,6 +76,11 @@ class PymwalibMetafitsContextDisplayError(PymwalibError):
     pass
 
 
+class PymwalibMetafitsContextGetExpectedVoltageFilename(PymwalibError):
+    """Raised when call to C mwalib_metafits_get_expected_volt_filename fails"""
+    pass
+
+
 class PymwalibCorrelatorContextDisplayError(PymwalibError):
     """Raised when call to C mwalib_correlator_context_display fails"""
     pass

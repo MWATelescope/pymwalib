@@ -36,6 +36,12 @@ class RFInput:
                  vcs_order: int,
                  subfile_order: int,
                  flagged: bool,
+                 digital_gains: [],
+                 num_digital_gains: int,
+                 dipole_delays: [],
+                 num_dipole_delays: int,
+                 dipole_gains: [],
+                 num_dipole_gains: int,
                  rec_number: int,
                  rec_slot_number: int):
         """Initialise the class"""
@@ -52,6 +58,12 @@ class RFInput:
         self.vcs_order: int = vcs_order
         self.subfile_order: int = subfile_order
         self.flagged: bool = flagged
+        self.num_digital_gains = num_digital_gains
+        self.digital_gains = digital_gains
+        self.num_dipole_delays = num_dipole_delays
+        self.dipole_delays = dipole_delays
+        self.num_dipole_gains = num_dipole_gains
+        self.dipole_gains = dipole_gains
         self.rec_number = rec_number
         self.rec_slot_number = rec_slot_number
 
@@ -71,6 +83,9 @@ class RFInput:
                f"vcs_order: {self.vcs_order}, " \
                f"subfile_order: {self.subfile_order}, " \
                f"flagged: {self.flagged}, " \
+               f"digital_gains: {self.digital_gains}, " \
+               f"dipole_delays: {self.dipole_delays}, " \
+               f"dipole_gains: {self.dipole_gains}, " \
                f"rec_number: {self.rec_number}, " \
                f"rec_slot_number: {self.rec_slot_number})"
 
@@ -81,6 +96,18 @@ class RFInput:
 
         for i in range(0, metafits_metadata.num_rf_inputs):
             obj: CRFInputS = metafits_metadata.rf_inputs[i]
+
+            digital_gains = []
+            for i in range(0, obj.num_digital_gains):
+                digital_gains.append(obj.digital_gains[i])
+
+            dipole_delays = []
+            for j in range(0, obj.num_dipole_delays):
+                dipole_delays.append(obj.dipole_delays[j])
+
+            dipole_gains = []
+            for k in range(0, obj.num_dipole_gains):
+                dipole_gains.append(obj.dipole_gains[k])
 
             # Populate all the fields
             rf_inputs.append(RFInput(i,
@@ -96,6 +123,12 @@ class RFInput:
                                      obj.vcs_order,
                                      obj.subfile_order,
                                      obj.flagged,
+                                     digital_gains,
+                                     obj.num_digital_gains,
+                                     dipole_delays,
+                                     obj.num_dipole_delays,
+                                     dipole_gains,
+                                     obj.num_dipole_gains,
                                      obj.rec_number,
                                      obj.rec_slot_number))
 

@@ -10,7 +10,7 @@ import ctypes as ct
 from datetime import datetime
 from .mwalib import mwalib_library, CMetafitsMetadataS, CMetafitsContextS, CCorrelatorContextS, CVoltageContextS, \
     create_string_buffer
-from .common import ERROR_MESSAGE_LEN, MWAMode, GeometricDelaysApplied
+from .common import ERROR_MESSAGE_LEN, MWAMode, MWAVersion, GeometricDelaysApplied
 from .errors import PymwalibMetafitsMetadataGetError
 from .antenna import Antenna
 from .baseline import Baseline
@@ -41,6 +41,7 @@ class MetafitsMetadata:
             # Populate all the fields
             c_object = c_object_ptr.contents
 
+            self.mwa_version: MWAVersion = c_object.mwa_version
             self.obs_id: int = c_object.obs_id
             self.global_analogue_attenuation_db: float = c_object.global_analogue_attenuation_db
             self.ra_tile_pointing_deg: float = c_object.ra_tile_pointing_deg
@@ -74,6 +75,14 @@ class MetafitsMetadata:
             self.num_corr_fine_chans_per_coarse: int = c_object.num_corr_fine_chans_per_coarse
             self.volt_fine_chan_width_hz: int = c_object.volt_fine_chan_width_hz
             self.num_volt_fine_chans_per_coarse: int = c_object.num_volt_fine_chans_per_coarse
+            self.num_receivers = c_object.num_receivers
+            self.receivers = []
+            for r in range(0, self.num_receivers):
+                self.receivers.append(c_object.receivers[r])
+            self.num_delays = c_object.num_delays
+            self.delays = []
+            for d in range(0, self.num_delays):
+                self.delays.append(c_object.delays[d])
             self.sched_start_utc: datetime = datetime.utcfromtimestamp(c_object.sched_start_utc)
             self.sched_end_utc: datetime = datetime.utcfromtimestamp(c_object.sched_end_utc)
             self.sched_start_mjd: float = c_object.sched_start_mjd
@@ -116,7 +125,7 @@ class MetafitsMetadata:
 
             # fine chan frequencies
             self.metafits_fine_chan_freqs_hz = []
-            for i in range(0, 4):
+            for i in range(0, self.num_metafits_fine_chan_freqs):
                 self.metafits_fine_chan_freqs_hz.append(c_object.metafits_fine_chan_freqs_hz[i])
 
             # We're now finished with the C memory, so free it
@@ -128,6 +137,7 @@ class MetafitsMetadata:
     def __str__(self):
         """Returns a representation of the class"""
         return f"{self.__class__.__name__}(\n" \
+               f"MWA Version                           : {self.mwa_version.name}\n" \
                f"Obs ID                                : {self.obs_id}\n" \
                f"Global attenuation                    : {self.global_analogue_attenuation_db} dB\n" \
                f"RA  (tile pointing)                   : {self.ra_tile_pointing_deg} deg\n" \
@@ -159,6 +169,8 @@ class MetafitsMetadata:
                f"Correlator fine channel width (Hz)    : {self.corr_fine_chan_width_hz}\n" \
                f"Correlator int. time (ms)             : {self.corr_int_time_ms}\n" \
                f"Correlator fine channels per coarse   : {self.num_corr_fine_chans_per_coarse}\n" \
+               f"Receivers                             : {self.receivers}\n" \
+               f"Delays                                : {self.delays}\n" \
                f"Scheduled Start (UTC)                 : {self.sched_start_utc}\n" \
                f"Scheduled End (UTC)                   : {self.sched_end_utc}\n" \
                f"Scheduled Start (UNIX)                : {float(self.sched_start_unix_time_ms) / 1000.} UNIX\n" \
