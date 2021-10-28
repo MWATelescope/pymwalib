@@ -2,6 +2,11 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.11.0 28-Oct-2021 (Pre-release)
+
+* Requires mwalib 0.11.*.
+* Added corr_raw_scale_factor to metafits metadata.
+
 ## 0.9.1 11-Aug-2021 (Pre-release)
 
 * Requires mwalib 0.9.*.
