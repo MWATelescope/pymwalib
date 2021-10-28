@@ -1,0 +1,5 @@
+matplotlib
+numpy
+pycairo
+PyGObject
+python-dateutil
