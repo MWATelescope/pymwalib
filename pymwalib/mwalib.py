@@ -227,6 +227,7 @@ if mwalib_library:
                     ('calibration_delays_and_gains_applied', ct.c_bool),
                     ('corr_fine_chan_width_hz', ct.c_uint32),
                     ('corr_int_time_ms', ct.c_uint64),
+                    ('corr_raw_scale_factor', ct.c_float),
                     ('num_corr_fine_chans_per_coarse', ct.c_size_t),
                     ('volt_fine_chan_width_hz', ct.c_int32),
                     ('num_volt_fine_chans_per_coarse', ct.c_size_t),

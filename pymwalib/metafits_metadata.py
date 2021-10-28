@@ -72,6 +72,7 @@ class MetafitsMetadata:
             self.calibration_delays_and_gains_applied: bool = c_object.calibration_delays_and_gains_applied
             self.corr_fine_chan_width_hz: int = c_object.corr_fine_chan_width_hz
             self.corr_int_time_ms: int = c_object.corr_int_time_ms
+            self.corr_raw_scale_factor: float = c_object.corr_raw_scale_factor
             self.num_corr_fine_chans_per_coarse: int = c_object.num_corr_fine_chans_per_coarse
             self.volt_fine_chan_width_hz: int = c_object.volt_fine_chan_width_hz
             self.num_volt_fine_chans_per_coarse: int = c_object.num_volt_fine_chans_per_coarse
