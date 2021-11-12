@@ -235,6 +235,8 @@ if mwalib_library:
                     ('num_receivers', ct.c_size_t),
                     ('delays', ct.POINTER(ct.c_uint32)),
                     ('num_delays', ct.c_size_t),
+                    ('calibrator', ct.c_bool),
+                    ('calibrator_source', ct.c_char_p),
                     ('sched_start_utc', ct.c_uint64),
                     ('sched_end_utc', ct.c_uint64),
                     ('sched_start_mjd', ct.c_double),

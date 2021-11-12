@@ -84,6 +84,8 @@ class MetafitsMetadata:
             self.delays = []
             for d in range(0, self.num_delays):
                 self.delays.append(c_object.delays[d])
+            self.calibrator = c_object.calibrator
+            self.calibrator_source: str = c_object.calibrator_source.decode("utf-8")
             self.sched_start_utc: datetime = datetime.utcfromtimestamp(c_object.sched_start_utc)
             self.sched_end_utc: datetime = datetime.utcfromtimestamp(c_object.sched_end_utc)
             self.sched_start_mjd: float = c_object.sched_start_mjd
@@ -172,6 +174,8 @@ class MetafitsMetadata:
                f"Correlator fine channels per coarse   : {self.num_corr_fine_chans_per_coarse}\n" \
                f"Receivers                             : {self.receivers}\n" \
                f"Delays                                : {self.delays}\n" \
+               f"Calibrator                            : {self.calibrator}\n" \
+               f"Calibrator Source                     : {self.calibrator_source}\n" \
                f"Scheduled Start (UTC)                 : {self.sched_start_utc}\n" \
                f"Scheduled End (UTC)                   : {self.sched_end_utc}\n" \
                f"Scheduled Start (UNIX)                : {float(self.sched_start_unix_time_ms) / 1000.} UNIX\n" \

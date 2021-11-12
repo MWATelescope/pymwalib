@@ -39,7 +39,8 @@ def test_mwax_metafits_context(mwax_corr_context: CorrelatorContext):
     assert mwax_corr_context.metafits_context.mwa_version == MWAVersion.CorrMWAXv2.value
     assert len(mwax_corr_context.metafits_context.receivers) == mwax_corr_context.metafits_context.num_receivers
     assert len(mwax_corr_context.metafits_context.delays) == mwax_corr_context.metafits_context.num_delays
-
+    assert mwax_corr_context.metafits_context.calibrator == True
+    assert mwax_corr_context.metafits_context.calibrator_source == "HydA"
 
 def test_mwax_antennas(mwax_corr_context: CorrelatorContext):
     assert len(mwax_corr_context.metafits_context.antennas) == 2

@@ -30,7 +30,7 @@ jobs:
         run: |
           cd /tmp; \
           mkdir libmwalib; \
-          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.11.0/mwalib-v0.11.0-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
+          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.12.0/mwalib-v0.12.0-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
           tar -xzf libmwalib.tar.gz -C libmwalib; \
           cd libmwalib; \
           sudo cp libmwalib.so /usr/local/lib/.; \
@@ -50,9 +50,9 @@ jobs:
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 pymwalib --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 pymwalib --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
           python -m pytest --cov-report xml --cov=pymwalib tests/
