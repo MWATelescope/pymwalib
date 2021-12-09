@@ -94,8 +94,8 @@ class RFInput:
         """Retrieve all of the rf_input metadata and populate a list of rf_inputs."""
         rf_inputs = []
 
-        for i in range(0, metafits_metadata.num_rf_inputs):
-            obj: CRFInputS = metafits_metadata.rf_inputs[i]
+        for rf_index in range(0, metafits_metadata.num_rf_inputs):
+            obj: CRFInputS = metafits_metadata.rf_inputs[rf_index]
 
             digital_gains = []
             for i in range(0, obj.num_digital_gains):
@@ -110,7 +110,7 @@ class RFInput:
                 dipole_gains.append(obj.dipole_gains[k])
 
             # Populate all the fields
-            rf_inputs.append(RFInput(i,
+            rf_inputs.append(RFInput(rf_index,
                                      obj.input,
                                      obj.ant,
                                      obj.tile_id,

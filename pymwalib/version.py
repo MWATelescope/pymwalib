@@ -37,7 +37,8 @@ def get_pymwalib_version_number() -> (int, int, int):
     try:
         return int(version.split(".")[0]), int(version.split(".")[1]), int(version.split(".")[2])
     except Exception as e:
-        raise Exception(f"Unabled to determine pymwalib version: Got {version} which could not be parsed. Error: {e}")
+        raise Exception(
+            f"Unabled to determine pymwalib version: Got {version} which could not be parsed. Error: {e}")
 
 
 """Checks, using semantic versioning, that mwalib is compatible with pymwalib. If so, returns, otherwise raises an execption"""

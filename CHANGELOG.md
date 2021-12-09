@@ -2,6 +2,11 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.12.1 09-Dec-2021 (Pre-release)
+* Requires mwalib 0.12.*.
+* Added new example to simply print tile info (examples/print-tile-info.py).
+* Fixed bug where rfinput.index was not set correctly.
+
 ## 0.12.0 12-Nov-2021 (Pre-release)
 * Requires mwalib 0.12.*.
 * Added metafits_context.calibrator and metafits_context.calibrator_source
