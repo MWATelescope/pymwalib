@@ -27,8 +27,8 @@ RUN cd /tmp; \
 RUN cd /; \
     git clone "https://github.com/MWATelescope/pymwalib.git"; \
     cd pymwalib; \
-    pip install -r requirements.txt; \
-    python setup.py install;
+    pip install --upgrade pip setuptools wheel; \
+    pip install .;
 
 # Install requirements for examples
 RUN pip install joblib
