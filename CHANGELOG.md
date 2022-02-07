@@ -2,6 +2,10 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.13.0 07-Feb-2022 (Pre-release)
+* Requires mwalib 0.13.*.
+* RFInput->digital_gains are now a list of doubles as mwalib >=0.13.0 is also applying the division of 64 to restore the gains value correctly.
+
 ## 0.12.1 09-Dec-2021 (Pre-release)
 * Requires mwalib 0.12.*.
 * Added new example to simply print tile info (examples/print-tile-info.py).

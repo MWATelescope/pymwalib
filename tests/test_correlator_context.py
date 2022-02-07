@@ -68,6 +68,9 @@ def test_mwax_rfinputs(mwax_corr_context: CorrelatorContext):
            mwax_corr_context.metafits_context.rf_inputs[0].num_dipole_gains
     assert len(mwax_corr_context.metafits_context.rf_inputs[0].digital_gains) == \
            mwax_corr_context.metafits_context.rf_inputs[0].num_digital_gains
+    assert len(mwax_corr_context.metafits_context.rf_inputs[0].digital_gains) == 2
+    assert mwax_corr_context.metafits_context.rf_inputs[0].digital_gains[0] == 60. / 64.
+    assert mwax_corr_context.metafits_context.rf_inputs[0].digital_gains[1] == 61. / 64. 
     assert mwax_corr_context.metafits_context.rf_inputs[1].tile_id == 51
     assert mwax_corr_context.metafits_context.rf_inputs[1].pol == "Y"
     assert mwax_corr_context.metafits_context.rf_inputs[2].tile_id == 52

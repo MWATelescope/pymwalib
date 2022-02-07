@@ -6,7 +6,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+from numpy import double
 from .mwalib import CRFInputS, CMetafitsMetadataS
+from typing import List
 
 
 class RFInput:
@@ -17,6 +19,8 @@ class RFInput:
     ----------
     index : int
         Ordinal index of this RF Input.
+
+    NOTE: Digital gains are in sky frequency order
 
     Please see https://github.com/MWATelescope/mwalib/blob/master/src/rf_input.rs for remaining attributes
 
@@ -36,11 +40,11 @@ class RFInput:
                  vcs_order: int,
                  subfile_order: int,
                  flagged: bool,
-                 digital_gains: [],
+                 digital_gains: List[double],
                  num_digital_gains: int,
-                 dipole_delays: [],
+                 dipole_delays: List[int],
                  num_dipole_delays: int,
-                 dipole_gains: [],
+                 dipole_gains: List[double],
                  num_dipole_gains: int,
                  rec_number: int,
                  rec_slot_number: int):
@@ -90,8 +94,9 @@ class RFInput:
                f"rec_slot_number: {self.rec_slot_number})"
 
     @staticmethod
-    def get_rf_inputs(metafits_metadata: CMetafitsMetadataS) -> []:
+    def get_rf_inputs(metafits_metadata: CMetafitsMetadataS) -> List['RFInput']:
         """Retrieve all of the rf_input metadata and populate a list of rf_inputs."""
+        # The return type of this function is in single quotes as it is a forward reference.
         rf_inputs = []
 
         for rf_index in range(0, metafits_metadata.num_rf_inputs):

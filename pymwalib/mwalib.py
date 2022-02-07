@@ -176,7 +176,7 @@ if mwalib_library:
                     ('vcs_order', ct.c_uint32),
                     ('subfile_order', ct.c_uint32),
                     ('flagged', ct.c_bool),
-                    ('digital_gains', ct.POINTER(ct.c_uint32)),
+                    ('digital_gains', ct.POINTER(ct.c_double)),
                     ('num_digital_gains', ct.c_size_t),
                     ('dipole_delays', ct.POINTER(ct.c_uint32)),
                     ('num_dipole_delays', ct.c_size_t),
