@@ -1,0 +1,12 @@
+# To deploy to pypi
+pip install setuptools build twine
+
+# Build
+pip install .
+python -m build
+
+# Check pypi
+twine check dist/*
+
+# Upload to 
+twine upload dist/*
