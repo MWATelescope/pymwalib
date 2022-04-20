@@ -1156,7 +1156,7 @@ def do_phase_plot(
             tile2_name = program_args.context.metafits_context.antennas[
                 j + program_args.tile1
             ].tile_name
-            plot.set_title(f"{tile1_name} v {tile2_name}", size=6, pad=20)
+            plot.set_title(f"{tile1_name} v {tile2_name}", size=6, pad=2)
 
             # Increment so we know which plot we are on
             if plot_col < plot_cols - 1:

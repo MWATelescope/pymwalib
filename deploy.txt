@@ -1,5 +1,5 @@
-# To deploy to pypi
-pip install setuptools build twine
+# deploy to pypi
+pip install --upgrade setuptools build twine
 
 # Build
 pip install .

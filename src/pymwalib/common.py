@@ -13,6 +13,7 @@ ERROR_MESSAGE_LEN = 1024
 
 class MWAVersion(enum.Enum):
     """Enum for MWA version"""
+
     # MWA correlator(v1.0), having data files without any batch numbers.
     CorrOldLegacy = 1
     # MWA correlator(v1.0), having data files with "gpubox" and batch numbers in their names.
@@ -27,6 +28,7 @@ class MWAVersion(enum.Enum):
 
 class VisPol(enum.Enum):
     """Enum representing the four visibility polarisations for MWA"""
+
     XX = 1
     XY = 2
     YX = 3
@@ -35,14 +37,24 @@ class VisPol(enum.Enum):
 
 class GeometricDelaysApplied(enum.Enum):
     """Enum representing the state of Geometric delays applied for this observation"""
+
     No = 0
     Zenith = 1
     TilePointing = 2
     AzElTracking = 3
 
 
+class CableDelaysApplied(enum.Enum):
+    """Enum representing the state of Cable delays applied for this observation"""
+
+    NoCableDelaysApplied = 0
+    CableAndRecClock = 1
+    CableAndRecClockAndBeamformerDipoleDelays = 2
+
+
 class MWAMode(enum.Enum):
     """Enum representing the correlator mode"""
+
     No_Capture = 0
     Burst_Vsib = 1
     Sw_Cor_Vsib = 2
