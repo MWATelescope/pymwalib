@@ -1,6 +1,10 @@
 # deploy to pypi
 pip install --upgrade setuptools build twine
 
+
+# Remove old dist
+rm -rf dist
+
 # Build
 pip install .
 python -m build
