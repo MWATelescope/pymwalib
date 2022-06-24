@@ -54,8 +54,9 @@ try:
     mwalib_library = ct.cdll.LoadLibrary(mwalib_filename)
 except Exception as library_load_err:
     print(
-        f"Error loading {mwalib_filename}. Please check that it is in your system library path or in your LD_LIBRARY_PATH "
-        f"environment variable.\n\nError was: {library_load_err}"
+        f"Error loading {mwalib_filename}. Please check that it is in your"
+        " system library path or in your LD_LIBRARY_PATH environment"
+        f" variable.\n\nError was: {library_load_err}"
     )
     exit(1)
 
@@ -270,6 +271,7 @@ if mwalib_library:
             ("sched_start_gps_time_ms", ct.c_uint64),
             ("sched_end_gps_time_ms", ct.c_uint64),
             ("sched_duration_ms", ct.c_uint64),
+            ("dut1", ct.c_double),
             ("quack_time_duration_ms", ct.c_uint64),
             ("good_time_unix_ms", ct.c_uint64),
             ("good_time_gps_ms", ct.c_uint64),

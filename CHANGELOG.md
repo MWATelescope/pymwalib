@@ -2,6 +2,10 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.15.0 24-Jun-2022 (Pre-release)
+* Requires mwalib 0.15.*.
+* Added dut1 to MetafitsContext
+
 ## 0.14.0 13-Apr-2022 (Pre-release)
 * Requires mwalib 0.14.*.
 * cable_delays_applied is now an enum.
