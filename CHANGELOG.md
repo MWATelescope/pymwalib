@@ -2,6 +2,17 @@
 
 Changes in each release are listed below. Please see MWATelescope/mwalib CHANGELOG for more detailed changes to the underlying mwalib library.
 
+## 0.16.0 08-Dec-2022 (Pre-release)
+* Requires mwalib 0.16.*.
+* MetafitsMetadata->ra_phase_center_deg is now NaN not 0 when missing from metafits file.
+* MetafitsMetadata->dec_phase_center_deg is now NaN not 0 when missing from metafits file.
+* MetafitsMetadata->grid_name defaults to 'NOGRID' when key is missing from metafits file.
+* MetafitsMetadata->grid_number defaults to 0 when key is missing from metafits file.
+* MetafitsMetadata->sun_alt_deg where key is missing from metafits file, value is represented by a NaN, not 0.
+* MetafitsMetadata->sun_distance_deg where key is missing from metafits file, value is represented by a NaN, not 0.
+* MetafitsMetadata->moon_distance_deg where key is missing from metafits file, value is represented by a NaN, not 0.
+* MetafitsMetadata->jupiter_distance_deg where key is missing from metafits file, value is represented by a NaN, not 0.
+
 ## 0.15.0 24-Jun-2022 (Pre-release)
 * Requires mwalib 0.15.*.
 * Added dut1 to MetafitsContext
