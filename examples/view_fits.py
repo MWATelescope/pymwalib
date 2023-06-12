@@ -390,7 +390,7 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
         # Print all tile info but only for the first timestep we have
         if time_index == 0:
             print(
-                f"QUAKTIME:"
+                "QUAKTIME:"
                 f"{program_args.context.metafits_context.quack_time_duration_ms/1000.} s\n"
             )
 
@@ -410,7 +410,8 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
                     is False
                 ):
                     print(
-                        f"Index {i}, TileID: {program_args.context.metafits_context.antennas[i].tile_id} "
+                        f"Index {i}, TileID:"
+                        f" {program_args.context.metafits_context.antennas[i].tile_id} "
                         f"{program_args.context.metafits_context.antennas[i].tile_name}"
                         f" (rec:{program_args.context.metafits_context.antennas[i].rf_input_x.rec_number},"
                         f"slot:{program_args.context.metafits_context.antennas[i].rf_input_x.rec_slot_number})"
@@ -430,7 +431,8 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
                     ].rf_input_y.flagged
                 ):
                     print(
-                        f"Index {i}, TileID: {program_args.context.metafits_context.antennas[i].tile_id} "
+                        f"Index {i}, TileID:"
+                        f" {program_args.context.metafits_context.antennas[i].tile_id} "
                         f"{program_args.context.metafits_context.antennas[i].tile_name}"
                         f" (rec:{program_args.context.metafits_context.antennas[i].rf_input_x.rec_number},"
                         f"slot:{program_args.context.metafits_context.antennas[i].rf_input_x.rec_slot_number})"
@@ -455,7 +457,6 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
                         program_args.mode,
                     )
                 ):
-
                     for chan in range(
                         program_args.channel1, program_args.channel2 + 1
                     ):
@@ -710,6 +711,9 @@ def do_ppd_plot(
         plot.set_ylabel("dB", size=6)
     else:
         plot.set_ylabel("Raw value", size=6)
+    y_min, y_max = plot.get_ylim()
+    plot.set_ylim(0, y_max)
+    # plot.set_ylim(0, 30000000000)
 
     plot.set_xlabel("fine channel", size=6)
 
@@ -1098,7 +1102,6 @@ def do_phase_plot(
 
     for i in range(0, program_args.tile_count):
         for j in range(i, program_args.tile_count):
-
             if program_args.phase_plot_one:
                 if not (i == 0 and j == (program_args.tile_count - 1)):
                     # skip this plot
@@ -1252,8 +1255,10 @@ if __name__ == "__main__":
         "-p2",
         "--ppdplot2",
         required=False,
-        help="Create a ppd plot that does not sum across all "
-        "baselines. ie it plots all baselines",
+        help=(
+            "Create a ppd plot that does not sum across all "
+            "baselines. ie it plots all baselines"
+        ),
         action="store_true",
     )
     parser.add_argument(
@@ -1267,25 +1272,28 @@ if __name__ == "__main__":
         "-g2",
         "--gridplot2",
         required=False,
-        help="Create a grid / baseline plot but show a single "
-        "pol (XX,XY,YX,YY) for each tile. Use gridpol "
-        "to specify",
+        help=(
+            "Create a grid / baseline plot but show a single "
+            "pol (XX,XY,YX,YY) for each tile. Use gridpol "
+            "to specify"
+        ),
         action="store_true",
     )
     parser.add_argument(
         "-gp",
         "--gridpol",
         required=False,
-        help="If gridplot2 used, use this to specify the pol. "
-        "Default is 'XX'",
+        help="If gridplot2 used, use this to specify the pol. Default is 'XX'",
         default="XX",
     )
     parser.add_argument(
         "-ph",
         "--phaseplot_all",
         required=False,
-        help="Will do a phase plot for all baselines for "
-        "given antennas and timesteps",
+        help=(
+            "Will do a phase plot for all baselines for "
+            "given antennas and timesteps"
+        ),
         action="store_true",
     )
 
@@ -1293,7 +1301,7 @@ if __name__ == "__main__":
         "-ph1",
         "--phaseplot_one",
         required=False,
-        help="Will do a phase plot for given baseline " "and timesteps",
+        help="Will do a phase plot for given baseline and timesteps",
         action="store_true",
     )
 

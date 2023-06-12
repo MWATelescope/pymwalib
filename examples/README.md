@@ -1,8 +1,10 @@
 # pymwalib Examples
+
 The `view_fits.py` example provides basic plotting functionality.
 
 Command line usage:
-```
+
+```bash
 usage: view_fits.py [-h] -m METAFITS [-t1 TIMESTEP1] [-t2 TIMESTEP2] [-a1 ANT1] [-a2 ANT2] [-c1 CHANNEL1] [-c2 CHANNEL2] [-a] [-p] [-p2] [-g] [-g2] [-gp GRIDPOL] [-ph] [-ph1] -o MODE [-dr] [-dp] filename
 
 positional arguments:
@@ -40,7 +42,15 @@ optional arguments:
 ```
 
 Example of plotting phase vs frequency for antennas 100->109 and timesteps 2-8:
-```
+
+```bash
 python examples/view_fits.py -m /data/1339927336.metafits /data/1339927336_20220622100158_ch121_000.fits -a1 100 -a2 109 -t1 2 -t2 8 --mode=RANGE -ph
 ```
+
 Phase vs frequency for multiple timesteps results in the plot adding more points as it works through each timestep. The values are not integrated across timesteps.
+
+Example of plotting power vs frequency for the baseline 0 v 0 and timesteps 2-8:
+
+```bash
+python examples/view_fits.py -m /data/1339927336.metafits /data/1339927336_20220622100158_ch121_000.fits -a1 0 -a2 0 -t1 2 -t2 8 --mode=BASELINE -p
+```

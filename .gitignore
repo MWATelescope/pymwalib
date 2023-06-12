@@ -7,3 +7,7 @@ pymwalib.egg-info/
 pymwalib.egg-info/
 tests/__pycache__/
 .python-version
+.vscode/
+*.png
+*.png
+MANIFEST
