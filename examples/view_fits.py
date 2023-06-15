@@ -1,16 +1,9 @@
 import argparse
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 from pymwalib.common import MWAVersion
 import pymwalib.correlator_context
-
-# Allow X windows support- but you need to
-# pip install pycairo
-# pip install pygobject
-# first.
-matplotlib.use("GTK3Agg")
 
 dpi = 100
 MODE_RANGE = "RANGE"
@@ -389,6 +382,10 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
 
         # Print all tile info but only for the first timestep we have
         if time_index == 0:
+            print(f"Mode: {program_args.context.metafits_context.corr_fine_chan_width_hz/1000} kHz, {program_args.context.metafits_context.corr_int_time_ms/1000} s")
+            
+            print(f"Timesteps: 1 - {len(program_args.context.timesteps)}")
+            
             print(
                 "QUAKTIME:"
                 f"{program_args.context.metafits_context.quack_time_duration_ms/1000.} s\n"
