@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
-        python-version: [ 3.7, 3.8, 3.9, '3.10' ]
+        python-version: [ 3.7, 3.8, 3.9, '3.10','3.11']
 
     steps:
       - uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
         run: |
           cd /tmp; \
           mkdir libmwalib; \
-          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.16.0/mwalib-v0.16.0-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
+          wget "https://github.com/MWATelescope/mwalib/releases/download/v0.16.3/mwalib-v0.16.3-linux_x86_64.tar.gz" -O libmwalib.tar.gz; \
           tar -xzf libmwalib.tar.gz -C libmwalib; \
           cd libmwalib; \
           sudo cp libmwalib.so /usr/local/lib/.; \
