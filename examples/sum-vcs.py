@@ -16,24 +16,31 @@ import time
 import numpy as np
 
 from pymwalib.errors import PymwalibNoDataForTimestepAndCoarseChannelError
-from pymwalib.version import check_mwalib_version
+from pymwalib.version import (
+    check_mwalib_version,
+    get_mwalib_version_string,
+    get_pymwalib_version_string,
+)
 from pymwalib.voltage_context import VoltageContext
 
 
-def sum_by_file(context: VoltageContext, timestep_index: int, coarse_chan_index: int) -> int:
+def sum_by_file(
+    context: VoltageContext, timestep_index: int, coarse_chan_index: int
+) -> int:
     total_sum = 0
 
-    start_gpstime_sec = int(context.timesteps[context.provided_timestep_indices[t]].gps_time_ms / 1000)
-    gps_seconds_count = int(context.timestep_duration_ms / 1000)
-    end_gpstime_sec = start_gpstime_sec + gps_seconds_count
-
-    print(f"...Summing {start_gpstime_sec} to {end_gpstime_sec} ({gps_seconds_count} seconds) and "
-          f"chan: {coarse_chan_index}...", end="")
+    freq = context.coarse_channels[coarse_chan_index].chan_centre_hz / 10**6
+    rec_chan = context.coarse_channels[coarse_chan_index].rec_chan_number
 
     try:
-        data = context.read_file(timestep_index, coarse_chan_index)
-        total_sum = data.sum(dtype=np.int64)
-        print(f"{total_sum}")
+        ndarray_i8 = context.read_file(timestep_index, coarse_chan_index)
+        total_sum = ndarray_i8.sum(dtype=np.longlong)
+        print(
+            f"coarse chan: {coarse_chan_index} @ {freq} MHz (ch{rec_chan});"
+            " time:"
+            f" {int(context.timesteps[timestep_index].gps_time_ms/1000)} ="
+            f" {total_sum}"
+        )
 
     except PymwalibNoDataForTimestepAndCoarseChannelError:
         pass
@@ -45,16 +52,27 @@ def sum_by_file(context: VoltageContext, timestep_index: int, coarse_chan_index:
     return total_sum
 
 
-def sum_by_gps_second(context: VoltageContext, gps_start_sec, gps_end_sec, gps_seconds_count,
-                      coarse_chan_index: int) -> int:
+def sum_by_gps_second(
+    context: VoltageContext,
+    gps_start_sec: int,
+    gps_end_sec: int,
+    gps_seconds_count: int,
+    coarse_chan_index: int,
+) -> int:
     total_sum = 0
 
-    print(f"...Summing {gps_start_sec} to {gps_end_sec} ({gps_seconds_count} seconds) and "
-          f"chan: {coarse_chan_index}...", end="")
+    freq = context.coarse_channels[coarse_chan_index].chan_centre_hz / 10**6
+    rec_chan = context.coarse_channels[coarse_chan_index].rec_chan_number
+
     try:
-        data = context.read_second(gps_start_sec, gps_seconds_count, coarse_chan_index)
-        total_sum = data.sum(dtype=np.int64)
-        print(f"{total_sum}")
+        ndarray_i8 = context.read_second(
+            gps_start_sec, gps_seconds_count, coarse_chan_index
+        )
+        total_sum = ndarray_i8.sum(dtype=np.longlong)
+        print(
+            f"coarse chan: {coarse_chan_index} @ {freq} MHz (ch{rec_chan});"
+            f" time: {gps_start_sec} = {total_sum}"
+        )
 
     except PymwalibNoDataForTimestepAndCoarseChannelError:
         pass
@@ -71,44 +89,118 @@ if __name__ == "__main__":
     # You can skip this if you want, but your first pymwalib call will raise an error. Best trap it here
     # and provide a nice user message
     try:
+        print(
+            f"sum_vcs.py:\nUsing mwalib: v{get_mwalib_version_string()} and"
+            f" pymwalib: v{get_pymwalib_version_string()}\n"
+        )
         check_mwalib_version()
     except Exception as e:
         print(e)
         exit(1)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--metafits", required=True,
-                        help="Path to the metafits file.")
-    parser.add_argument("datafiles", nargs='*',
-                        help="Paths to the vcs data files.")
+    parser.add_argument(
+        "-m", "--metafits", required=True, help="Path to the metafits file."
+    )
+    parser.add_argument(
+        "datafiles", nargs="*", help="Paths to the vcs data files."
+    )
     args = parser.parse_args()
 
     context = VoltageContext(args.metafits, args.datafiles)
 
+    # Quick sanity check
+    print(f"Obs Id: {context.metafits_context.obs_id}")
+    print(f"Provided Timesteps: {context.num_provided_timesteps}")
+    print(f"Provided Coarse Channles: {context.num_provided_coarse_chans}")
+
+    if context.num_provided_timesteps == 0:
+        print("Error no timestemps to sum!")
+        exit(-1)
+
+    if context.num_provided_coarse_chans == 0:
+        print("Error no coarse channels to sum!")
+        exit(-1)
+
+    # Get the gpstime of the first timestep (based on files provided)
+    start_gpstime_sec = int(
+        context.timesteps[context.provided_timestep_indices[0]].gps_time_ms
+        / 1000
+    )
+
+    # Get the gpstime of the last timestep (based on files provided)
+    end_gpstime_sec = (
+        int(
+            (
+                context.timesteps[
+                    context.provided_timestep_indices[
+                        context.num_provided_timesteps - 1
+                    ]
+                ].gps_time_ms
+                + context.timestep_duration_ms
+            )
+            / 1000
+        )
+        - 1
+    )
+
+    # Calculate the number of GPS seconds provided
+    gps_seconds_count = context.num_provided_timesteps * int(
+        context.timestep_duration_ms / 1000
+    )
+
+    print(
+        f"Summing {start_gpstime_sec} to"
+        f" {end_gpstime_sec} ({gps_seconds_count} seconds)"
+    )
+
+    #
+    # pymwalib provides 2 methods for getting to the data- we'll test both
+    #
+
     # sum by file
-    print(f"sum_by_file: Summing {context.num_provided_timesteps} timesteps "
-          f"and {context.num_provided_coarse_chans} coarse channels...")
+    print("Sum_by_file...")
     total_sum_by_file = 0
     start_time = time.time()
-    for t in context.provided_timestep_indices:
-        for c in context.provided_coarse_chan_indices:
-            total_sum_by_file += np.sum(sum_by_file(context, t, c))
+    for t in range(0, len(context.provided_timestep_indices)):
+        for c in range(0, len(context.provided_coarse_chan_indices)):
+            total_sum_by_file += np.sum(
+                sum_by_file(
+                    context,
+                    context.provided_timestep_indices[t],
+                    context.provided_coarse_chan_indices[c],
+                )
+            )
     stop_time = time.time()
-    print(f"Sum is: {total_sum_by_file} in {stop_time - start_time} seconds.\n")
+    print(
+        f"Sum is: {total_sum_by_file} in {stop_time - start_time} seconds.\n"
+    )
 
     # sum by gps second
-    start_gpstime_sec = int(context.timesteps[context.provided_timestep_indices[0]].gps_time_ms / 1000)
-    end_gpstime_sec = int((
-                                  context.timesteps[context.provided_timestep_indices[
-                                      context.num_provided_timesteps - 1]].gps_time_ms +
-                                  context.timestep_duration_ms) / 1000)
-    gps_second_count = end_gpstime_sec - start_gpstime_sec
-
-    print(f"sum_by_gps_second: Summing {context.num_provided_timesteps} timesteps "
-          f"and {context.num_provided_coarse_chans} coarse channels...")
+    print("Sum_by_gps_second")
     total_sum_by_gps = 0
     start_time = time.time()
-    for c in context.provided_coarse_chan_indices:
-        total_sum_by_gps += sum_by_gps_second(context, start_gpstime_sec, end_gpstime_sec, gps_second_count, c)
+
+    for t in range(0, len(context.provided_timestep_indices)):
+        for c in range(0, len(context.provided_coarse_chan_indices)):
+            this_gpstime = int(
+                context.timesteps[
+                    context.provided_timestep_indices[t]
+                ].gps_time_ms
+                / 1000
+            )
+
+            total_sum_by_gps += sum_by_gps_second(
+                context,
+                this_gpstime,
+                this_gpstime + int(context.timestep_duration_ms / 1000),
+                int(context.timestep_duration_ms / 1000),
+                context.provided_coarse_chan_indices[c],
+            )
     stop_time = time.time()
     print(f"Sum is: {total_sum_by_gps} in {stop_time - start_time} seconds.")
+
+    if total_sum_by_gps == total_sum_by_file:
+        print("\nSUMS MATCH OK")
+    else:
+        print("\nWARNING: Sums do not match!")
