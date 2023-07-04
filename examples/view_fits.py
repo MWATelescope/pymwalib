@@ -1,16 +1,9 @@
 import argparse
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 from pymwalib.common import MWAVersion
 import pymwalib.correlator_context
-
-# Allow X windows support- but you need to
-# pip install pycairo
-# pip install pygobject
-# first.
-matplotlib.use("GTK3Agg")
 
 dpi = 100
 MODE_RANGE = "RANGE"
@@ -35,6 +28,7 @@ class ViewFITSArgs:
 
         self.ppd_plot = passed_args["ppdplot"]
         self.ppd_plot2 = passed_args["ppdplot2"]
+        self.ppd_plot3 = passed_args["ppdplot3"]
         self.grid_plot = passed_args["gridplot"]
         self.grid_plot2 = passed_args["gridplot2"]
         self.grid_pol = passed_args["gridpol"]
@@ -49,6 +43,7 @@ class ViewFITSArgs:
         self.any_plotting = (
             self.ppd_plot
             or self.ppd_plot2
+            or self.ppd_plot3
             or self.grid_plot
             or self.phase_plot_all
             or self.phase_plot_one
@@ -269,6 +264,17 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
         )
         plot_ppd2_data_y.fill(0)
 
+    # ppd3 array will be [channel]
+    if program_args.ppd_plot3:
+        plot_ppd3_data_x = np.empty(
+            shape=(program_args.channel_count)
+        )
+        plot_ppd3_data_x.fill(0)
+        plot_ppd3_data_y = np.empty(
+            shape=(program_args.channel_count)
+        )
+        plot_ppd3_data_y.fill(0)
+
     # Grid plot
     if program_args.grid_plot:
         plot_grid_data = np.empty(
@@ -331,6 +337,9 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
         elif program_args.ppd_plot2:
             plot_dump_file.write("plot_number, time_index, fine_chan, x, y\n")
 
+        if program_args.ppd_plot3:
+            plot_dump_file.write("fine_chan, x, y\n")
+
         elif program_args.grid_plot:
             plot_dump_file.write(
                 "unix_time, tile1, tile2, log10_scaled_power\n"
@@ -389,6 +398,10 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
 
         # Print all tile info but only for the first timestep we have
         if time_index == 0:
+            print(f"Mode: {program_args.context.metafits_context.corr_fine_chan_width_hz/1000} kHz, {program_args.context.metafits_context.corr_int_time_ms/1000} s")
+            
+            print(f"Timesteps: 1 - {len(program_args.context.timesteps)}")
+            
             print(
                 "QUAKTIME:"
                 f"{program_args.context.metafits_context.quack_time_duration_ms/1000.} s\n"
@@ -543,6 +556,10 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
                                 chan
                             ] = power_yy
 
+                        elif program_args.ppd_plot3:                            
+                            plot_ppd3_data_x[chan] += power_xx
+                            plot_ppd3_data_y[chan] += power_yy
+
                         elif program_args.grid_plot:
                             plot_grid_data[time_index][j][i] = (
                                 plot_grid_data[time_index][j][i]
@@ -606,6 +623,15 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
 
                 baseline = baseline + 1
 
+    if program_args.ppd_plot3:
+        print(f"Averaging {program_args.time_step_count} timesteps for each channel...")
+        for chan in range(
+                        program_args.channel1, program_args.channel2 + 1
+                    ):
+            print(f"Channel: {chan}")
+            plot_ppd3_data_x[chan] /= program_args.time_step_count
+            plot_ppd3_data_y[chan] /= program_args.time_step_count
+
     print("Processing of data done!")
 
     if program_args.dumpraw:
@@ -629,6 +655,16 @@ def peek_fits(program_args: ViewFITSArgs):  # noqa: C901
             program_args,
             plot_ppd2_data_x,
             plot_ppd2_data_y,
+            convert_to_db,
+        )
+
+    if program_args.ppd_plot3:
+        convert_to_db = False
+        do_ppd_plot3(
+            program_args.param_string,
+            program_args,
+            plot_ppd3_data_x,
+            plot_ppd3_data_y,
             convert_to_db,
         )
 
@@ -828,6 +864,76 @@ def do_ppd_plot2(
     print(f"saved {filename}")
     plt.show()
 
+def do_ppd_plot3(
+    title,
+    program_args: ViewFITSArgs,
+    plot_ppd_data_x,
+    plot_ppd_data_y,
+    convert_to_db,
+):
+    # This will average across timesteps and baselines to make a single ppd
+    print("Preparing ppd plot3...")
+
+    min_db = 0
+
+    # Convert to a dB figure    
+    if convert_to_db:        
+        for c in range(0, program_args.channel_count):
+            plot_ppd_data_x[c] = (
+                math.log10(plot_ppd_data_x[c] + 1) * 10
+            )
+            plot_ppd_data_y[c] = (
+                math.log10(plot_ppd_data_y[c] + 1) * 10
+            )
+
+        # Get min dB value
+        # Previously had min(np.array(plot_ppd_data_x).min(),
+        #                    np.array(plot_ppd_data_y).min())
+        min_db = 0
+        
+    fig, ax = plt.subplots(
+        figsize=(20, 10),
+        nrows=1,
+        ncols=1,
+        squeeze=False,
+        sharey="all",
+        dpi=dpi,
+    )
+    fig.suptitle(title)
+    
+    print(f"Adding data points...")
+    
+    # Get the current plot
+    plot = ax[0][0]
+
+    # Draw this plot
+    plot.plot(plot_ppd_data_x, "o", color="blue")
+    plot.plot(plot_ppd_data_y, "o", color="green")
+
+    # Set labels
+    if convert_to_db:
+        plot.set_ylabel("dB", size=6)
+    else:
+        plot.set_ylabel("Raw value", size=6)
+    y_min, y_max = plot.get_ylim()
+    plot.set_ylim(0, y_max)
+    # plot.set_ylim(0, 30000000000)
+
+    plot.set_xlabel("fine channel", size=6)
+
+    # Set plot title
+    plot.set_title(f"t={program_args.unix_time1}", size=6)
+
+    print("Saving figure...")
+
+    # Save the final plot to disk
+    if program_args.correlator_version == MWAVersion.CorrMWAXv2.value:
+        filename = "ppd_plot3_mwax.png"
+    else:
+        filename = "ppd_plot3_mwa.png"
+    plt.savefig(filename, bbox_inches="tight", dpi=dpi)
+    print(f"saved {filename}")
+    plt.show()
 
 def do_grid_plot(
     title, program_args: ViewFITSArgs, plot_grid_data
@@ -1248,7 +1354,7 @@ if __name__ == "__main__":
         "-p",
         "--ppdplot",
         required=False,
-        help="Create a ppd plot",
+        help="Create a ppd plot for a baseline, plotting multiple timesteps",
         action="store_true",
     )
     parser.add_argument(
@@ -1256,8 +1362,16 @@ if __name__ == "__main__":
         "--ppdplot2",
         required=False,
         help=(
-            "Create a ppd plot that does not sum across all "
-            "baselines. ie it plots all baselines"
+            "Create a ppd plot that does not sum across all baselines. ie it plots all baselines"
+        ),
+        action="store_true",
+    )
+    parser.add_argument(
+        "-p3",
+        "--ppdplot3",
+        required=False,
+        help=(
+            "Create a ppd plot for a baseline, plotting an average of the power for each frequency"
         ),
         action="store_true",
     )

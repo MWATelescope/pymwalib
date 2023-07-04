@@ -27,8 +27,9 @@ optional arguments:
   -c2 CHANNEL2, --channel2 CHANNEL2
                         fine channel number (end)
   -a, --autosonly       Only output the auto correlations
-  -p, --ppdplot         Create a ppd plot
+  -p, --ppdplot         Create a ppd plot for a baseline, plotting multiple timesteps 
   -p2, --ppdplot2       Create a ppd plot that does not sum across all baselines. ie it plots all baselines
+  -p3, --ppdplot3       Create a ppd plot for a baseline, plotting an average of the power for each frequency
   -g, --gridplot        Create a grid / baseline plot
   -g2, --gridplot2      Create a grid / baseline plot but show a single pol (XX,XY,YX,YY) for each tile. Use gridpol to specify
   -gp GRIDPOL, --gridpol GRIDPOL
